@@ -24,13 +24,11 @@ class _TrainZonePageState extends State<TrainZonePage> {
 
 
   Widget _buildMainScreen() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          _buildButtons(),
-        ],
-      ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        _buildButtons(),
+      ],
     );
   }
 
@@ -45,23 +43,30 @@ class _TrainZonePageState extends State<TrainZonePage> {
   }
 
   Widget _buildButtons() {
-    return Row(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        _buildDrumPad(DrumPadEnum.right),
-        _buildDrumPad(DrumPadEnum.left),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        spacing: 5.0,
+        children: [
+          Expanded(child: _buildDrumPad(DrumPadEnum.left)),
+          Expanded(child: _buildDrumPad(DrumPadEnum.right)),
+        ],
+      ),
     );
   }
 
   Widget _buildDrumPad(DrumPadEnum padId) {
     return Listener(
       onPointerDown: (_) => _soundDrumPad(padId),
-      child: ElevatedButton(
-        onPressed: () {},
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(_getPadLabel(padId)),
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: ElevatedButton(
+          onPressed: () {},
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(_getPadLabel(padId)),
+          ),
         ),
       ),
     );
