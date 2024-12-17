@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <uses-permission android:name="android.permissions.VIBRATE"/>
+    
     <application
         android:label="rhythm_trainer"
         android:name="${applicationName}"
