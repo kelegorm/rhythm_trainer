@@ -11,8 +11,6 @@ class TrainZonePage extends StatefulWidget {
 }
 
 class _TrainZonePageState extends State<TrainZonePage> {
-  bool loaded = false;
-
   @override
   void initState() {
     super.initState();
@@ -20,10 +18,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
 
   @override
   Widget build(BuildContext context) {
-    var body = switch (loaded) {
-      false => const Center(),
-      true => _buildMainScreen(),
-    };
+    var body = _buildMainScreen();
     return _buildScaffold(body);
   }
 
