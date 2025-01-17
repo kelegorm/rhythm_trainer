@@ -1,6 +1,7 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_soloud/flutter_soloud.dart';
+
+
 class TrainZonePage extends StatefulWidget {
   const TrainZonePage({super.key, required this.title});
 
@@ -11,9 +12,24 @@ class TrainZonePage extends StatefulWidget {
 }
 
 class _TrainZonePageState extends State<TrainZonePage> {
+  final soloud = SoLoud.instance;
+  final s = Stopwatch();
+  late final AudioSource leftSound;
+  late final AudioSource rightSound;
+
   @override
   void initState() {
     super.initState();
+
+    _initSounds();
+  }
+
+  Future<void> _initSounds() async {
+    await soloud.init(bufferSize: 64);
+    leftSound = await soloud.loadAsset('assets/sounds/Clave Ekko Smash V6.wav');
+    rightSound = await soloud.loadAsset('assets/sounds/Block 1 Ekko Smash V6.wav');
+
+    //todo mark audio is loaded and update state
   }
 
   @override
@@ -21,7 +37,6 @@ class _TrainZonePageState extends State<TrainZonePage> {
     var body = _buildMainScreen();
     return _buildScaffold(body);
   }
-
 
   Widget _buildMainScreen() {
     return Column(
@@ -61,10 +76,11 @@ class _TrainZonePageState extends State<TrainZonePage> {
       onPointerDown: (_) => _soundDrumPad(padId),
       child: AspectRatio(
         aspectRatio: 1,
-        child: ElevatedButton(
-          onPressed: () {},
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.red,
+          ),
+          child: Center(
             child: Text(_getPadLabel(padId)),
           ),
         ),
@@ -73,23 +89,19 @@ class _TrainZonePageState extends State<TrainZonePage> {
   }
 
   void _soundDrumPad(DrumPadEnum padId) async {
-    // user have to turn haptic feedback in settings (its npt about permissions)
-    // maybe other vibro functions or libs can do it without feedback settings
-    // or maybe we can check that settings and suggest user to turn it on for additional experience
-    HapticFeedback.lightImpact();
+    s.start();
 
     switch (padId) {
       case DrumPadEnum.left:
-        AudioPlayer()
-            ..setPlayerMode(PlayerMode.lowLatency)
-            ..play(AssetSource('sounds/Clave Ekko Smash V6.wav'));
+        await soloud.play(leftSound);
 
       case DrumPadEnum.right:
-        AudioPlayer()
-          ..setPlayerMode(PlayerMode.lowLatency)
-          ..play(AssetSource('sounds/Block 1 Ekko Smash V6.wav'));
-
+        await soloud.play(rightSound);
     }
+
+
+    s.stop();
+    s.reset();
   }
 }
 
@@ -100,6 +112,4 @@ String _getPadLabel(DrumPadEnum padId) {
   };
 }
 
-enum DrumPadEnum {
-  left, right
-}
+enum DrumPadEnum { left, right }
