@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:rhythm_trainer/audio_thing.dart';
 
 
 class TrainZonePage extends StatefulWidget {
@@ -12,11 +12,6 @@ class TrainZonePage extends StatefulWidget {
 }
 
 class _TrainZonePageState extends State<TrainZonePage> {
-  final soloud = SoLoud.instance;
-  final s = Stopwatch();
-  late final AudioSource leftSound;
-  late final AudioSource rightSound;
-
   @override
   void initState() {
     super.initState();
@@ -25,10 +20,6 @@ class _TrainZonePageState extends State<TrainZonePage> {
   }
 
   Future<void> _initSounds() async {
-    await soloud.init(bufferSize: 64);
-    leftSound = await soloud.loadAsset('assets/sounds/Clave Ekko Smash V6.wav');
-    rightSound = await soloud.loadAsset('assets/sounds/Block 1 Ekko Smash V6.wav');
-
     //todo mark audio is loaded and update state
   }
 
@@ -89,19 +80,13 @@ class _TrainZonePageState extends State<TrainZonePage> {
   }
 
   void _soundDrumPad(DrumPadEnum padId) async {
-    s.start();
-
     switch (padId) {
       case DrumPadEnum.left:
-        await soloud.play(leftSound);
+        await playSound();
 
       case DrumPadEnum.right:
-        await soloud.play(rightSound);
+        await playSound();
     }
-
-
-    s.stop();
-    s.reset();
   }
 }
 
