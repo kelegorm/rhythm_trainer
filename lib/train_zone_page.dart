@@ -20,7 +20,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
   }
 
   Future<void> _initSounds() async {
-
+    initializeAudio();
     //todo mark audio is loaded and update state
   }
 
@@ -86,7 +86,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
         playLeft();
 
       case DrumPadEnum.right:
-        //todo play right
+        playRight();
     }
   }
 }
