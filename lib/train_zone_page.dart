@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rhythm_trainer/native_wrapper.dart';
 
 class TrainZonePage extends StatefulWidget {
   const TrainZonePage({super.key, required this.title});
@@ -82,7 +83,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
   void _soundDrumPad(DrumPadEnum padId) async {
     switch (padId) {
       case DrumPadEnum.left:
-        //todo play left
+        playLeft();
 
       case DrumPadEnum.right:
         //todo play right

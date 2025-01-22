@@ -2,6 +2,6 @@ import 'dart:ffi' as ffi;
 // import 'dart:io' show Platform, Directory;
 // import 'package:path/path.dart' as path;
 
-final ffi.DynamicLibrary _dylib = ffi.DynamicLibrary.open("libfirst_try.so");
+final ffi.DynamicLibrary _soundPlayerLib = ffi.DynamicLibrary.open("libsound_player.so");
 
-final myAdd = _dylib.lookupFunction<ffi.Int32 Function(ffi.Int32,ffi.Int32), int Function(int, int)>("myAdd");
+final playLeft = _soundPlayerLib.lookupFunction<ffi.Void Function(), void Function()>("playLeft");
