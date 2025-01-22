@@ -1,5 +1,6 @@
 #include <android/log.h>
 #include <math.h>
+#include <oboe/Oboe.h>
 #include <stdarg.h>
 #include <stdlib.h>
 
@@ -20,18 +21,19 @@ typedef struct {
     float* data;
     int length;
 } Wave;
-
 Wave getSinewave(int sample_count);
 
-void playLeft() {
-    alog("Play Left!");
+extern "C" {
+    void playLeft() {
+        alog("Play Left!");
 
-    Wave wave = getSinewave(256);
+        Wave wave = getSinewave(256);
 
-    // Выводим первые 10 значений синусоиды в лог для проверки.
-    alog("Generated Sine Wave Samples (Length: %d):", wave.length);
-    for (int i = 0; i < 10 && i < wave.length; i++) {
-        alog("Sample %d: %f", i, wave.data[i]);
+        // Выводим первые 10 значений синусоиды в лог для проверки.
+        alog("Generated Sine Wave Samples (Length: %d):", wave.length);
+        for (int i = 0; i < 10 && i < wave.length; i++) {
+            alog("Sample %d: %f", i, wave.data[i]);
+        }
     }
 }
 
