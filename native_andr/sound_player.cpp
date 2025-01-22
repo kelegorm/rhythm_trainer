@@ -3,6 +3,11 @@
 #include <oboe/Oboe.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <chrono>  // Для работы с временем
+using namespace std::chrono;
+
+steady_clock::time_point startTime;
+bool isPlaying = false;
 
 #define LOG_TAG "Native Sound PLayer"
 #define SAMPLE_RATE 44100
@@ -24,9 +29,19 @@ class AudioCallback : public oboe::AudioStreamDataCallback {
         AudioCallback(Wave wave) : wave(wave) {}
 
         oboe::DataCallbackResult onAudioReady(oboe::AudioStream* stream, void* audioData, int32_t numFrames) override {
-            alog("AudioCallback. frame count: %d", numFrames);
-            // Заменим данные в потоке на синусоиду
+            // Проверка времени, прошло ли 0.1 секунды
+            auto currentTime = high_resolution_clock::now();
+            auto duration = duration_cast<milliseconds>(currentTime - startTime).count();
 
+            alog("onAudioReady is called!! NumFrames is %d, duration is %lld", numFrames, duration);
+
+            if (duration >= 200) {
+                // Останавливаем поток после 0.2 секунды
+                isPlaying = false;
+                return oboe::DataCallbackResult::Stop;
+            }
+
+            // Заменим данные в потоке на синусоиду
             auto *outputData = static_cast<float *>(audioData);
             for (int i = 0; i < numFrames; ++i) {
                 outputData[i] = wave.data[i];
@@ -44,6 +59,14 @@ class AudioCallback : public oboe::AudioStreamDataCallback {
 extern "C" {
     void playLeft() {
         alog("Play Left!");
+
+        if (isPlaying) {
+            // Уже воспроизводится, ничего не делаем
+            return;
+        }
+        isPlaying = true;
+        startTime = high_resolution_clock::now();  // Запоминаем время начала
+
         Wave wave = getSinewave(1024);
 //        logWave(wave);
 
@@ -79,6 +102,7 @@ oboe::AudioStreamBuilder makeOboeBuilder() {
     oboe::AudioStreamBuilder builder;
 
     builder.setFormat(oboe::AudioFormat::Float)
+            ->setBufferCapacityInFrames(512)
             ->setChannelCount(oboe::ChannelCount::Mono)
             ->setSampleRate(SAMPLE_RATE)
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
