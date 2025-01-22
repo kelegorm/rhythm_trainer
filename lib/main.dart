@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:rhythm_trainer/native_wrapper.dart';
 import 'package:rhythm_trainer/train_zone_page.dart';
 
 void main() {
   runApp(const MyApp());
+
+  print(myAdd(12, 3));
 }
 
 class MyApp extends StatelessWidget {
