@@ -46,6 +46,16 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+    }
+
+    buildFeatures {
+        prefab true
     }
 
     buildTypes {
@@ -55,6 +65,10 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+}
+
+dependencies {
+    implementation 'com.google.oboe:oboe:1.9.3'
 }
 
 flutter {
