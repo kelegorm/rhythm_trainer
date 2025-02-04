@@ -15,55 +15,68 @@ using namespace std::chrono;
 
 typedef struct {
     float* data;
-    int length;
+    int length; // длинна в семплах
+    int currentIndex;  // Текущий индекс воспроизведения
+    bool isPlaying;    // Активен ли звук
 } Wave;
 
 void alog(const char *message, ...);
 Wave getSinewave(int sample_count, float freq);
 void logWave(Wave wave);
 oboe::AudioStreamBuilder makeOboeBuilder();
-void measureTime();
+//void measureTime();
 
-steady_clock::time_point startTime;
-bool isPlaying = false;
-Wave wave = getSinewave(1024, FREQUENCY);
-Wave wave2 = getSinewave(1024, FREQUENCY2);
+Wave leftSound = getSinewave(1024, FREQUENCY);
+Wave rightSound = getSinewave(1024, FREQUENCY2);
 
 class AudioCallback : public oboe::AudioStreamDataCallback {
 public:
-    AudioCallback(Wave wave) : wave(wave) {}
+//    AudioCallback(Wave wave) : wave(wave) {}
+    AudioCallback() {}
 
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream* stream, void* audioData, int32_t numFrames) override {
-        auto currentTime = high_resolution_clock::now();
-        auto duration = duration_cast<milliseconds>(currentTime - startTime).count();
-
-        if (duration >= 30) {
-            // Останавливаем поток после 0.08 секунды
-            isPlaying = false;
-        } else {
-            alog("onAudioReady is called!! NumFrames is %d, duration is %lld", numFrames, duration);
-        }
-
-        // Заменим данные в потоке на синусоиду
         auto *outputData = static_cast<float *>(audioData);
-        if (isPlaying) {
-            for (int i = 0; i < numFrames; ++i) {
-                outputData[i] = wave.data[i];
+
+        for (int i = 0; i < numFrames; ++i) {
+            float sample = 0.0f;
+
+            if (leftSound.isPlaying) {
+                sample += leftSound.data[leftSound.currentIndex] + 0.3f;
+                leftSound.currentIndex++;
+
+                // Проверить завершение звука
+                if (leftSound.currentIndex >= leftSound.length) {
+                    leftSound.isPlaying = false;  // Остановить звук
+                    leftSound.currentIndex = 0;  // Сбросить индекс
+                }
             }
-        } else {
-            for (int i = 0; i < numFrames; ++i) {
-                outputData[i] = 0;
+
+            if (rightSound.isPlaying) {
+                sample += rightSound.data[rightSound.currentIndex] + 0.3f;
+                rightSound.currentIndex++;
+
+                // Проверить завершение звука
+                if (rightSound.currentIndex >= rightSound.length) {
+                    rightSound.isPlaying = false;  // Остановить звук
+                    rightSound.currentIndex = 0;  // Сбросить индекс
+                }
             }
+
+            // Предотвратить клиппинг
+            if (sample > 1.0f) sample = 1.0f;
+            if (sample < -1.0f) sample = -1.0f;
+
+            outputData[i] = sample;
         }
 
         return oboe::DataCallbackResult::Continue;
     }
 
-    void setWave(Wave newWave) {
-        wave = newWave;
-    }
-private:
-    Wave wave;
+//    void setWave(Wave newWave) {
+//        wave = newWave;
+//    }
+//private:
+//    Wave wave;
 };
 
 oboe::AudioStream* globalStream = nullptr;
@@ -75,7 +88,7 @@ extern "C" {
         if (globalStream != nullptr) return; // Поток уже открыт
 
         oboe::AudioStreamBuilder myOboe = makeOboeBuilder(); // todo check if existed (but maybe not)
-        globalCallback = new AudioCallback({nullptr, 0});
+        globalCallback = new AudioCallback();
         myOboe.setDataCallback(globalCallback);
 
         oboe::Result result = myOboe.openStream(&globalStream);
@@ -109,14 +122,9 @@ extern "C" {
             alog("Audio stream is not initialized!");
             return;
         }
-        if (isPlaying) {
-            return;
-        }
 
-        isPlaying = true;
-        startTime = high_resolution_clock::now();  // Запоминаем время начала
-
-        globalCallback->setWave(wave); // Запушаем волноформу в AudioCallback
+        leftSound.isPlaying = true;
+        leftSound.currentIndex = 0;
     }
 
     void playRight() {
@@ -124,13 +132,9 @@ extern "C" {
             alog("Audio stream is not initialized!");
             return;
         }
-        if (isPlaying) {
-            return;
-        }
-        isPlaying = true;
-        startTime = high_resolution_clock::now();  // Запоминаем время начала
 
-        globalCallback->setWave(wave2);
+        rightSound.isPlaying = true;
+        rightSound.currentIndex = 0;
     }
 
 }
@@ -165,6 +169,9 @@ Wave getSinewave(int sample_count, float freq) {
         result.data[i] = sinf(twoPi * freq * ((float)i / SAMPLE_RATE));
     }
 
+    result.currentIndex = 0;
+    result.isPlaying = false;
+
     return result;
 }
 
@@ -180,11 +187,11 @@ void alog(const char *message, ...) {
     va_end(args);
 }
 
-void measureTime() {
-    auto currentTime = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(currentTime - startTime).count();
-    alog("Time since start playing: %d microsec", duration);
-}
+//void measureTime() {
+//    auto currentTime = high_resolution_clock::now();
+//    auto duration = duration_cast<microseconds>(currentTime - startTime).count();
+//    alog("Time since start playing: %d microsec", duration);
+//}
 
 void logWave(Wave wave) {
     // Выводим первые 10 значений синусоиды в лог для проверки.
