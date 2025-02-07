@@ -20,8 +20,15 @@ class _TrainZonePageState extends State<TrainZonePage> {
   }
 
   Future<void> _initSounds() async {
-    initializeAudio();
-    //todo mark audio is loaded and update state
+    initializeAudio((result) {
+      if (result == 0) {
+        print('Audio Inited');
+      } else {
+        print("Failed to init audio. Error code: $result");
+      }
+
+      //todo mark audio is loaded and update state
+    });
   }
 
   @override

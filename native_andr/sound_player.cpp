@@ -20,6 +20,8 @@ typedef struct {
     bool isPlaying;    // Активен ли звук
 } Wave;
 
+using InitCallback = void(*)(int);
+
 void alog(const char *message, ...);
 Wave getSinewave(int sample_count, float freq);
 void logWave(Wave wave);
@@ -83,7 +85,7 @@ oboe::AudioStream* globalStream = nullptr;
 AudioCallback* globalCallback = nullptr;
 
 extern "C" {
-    void initializeAudio() {
+    void initializeAudio(InitCallback callback) {
         alog("initializeAudio");
         if (globalStream != nullptr) return; // Поток уже открыт
 
@@ -93,14 +95,26 @@ extern "C" {
 
         oboe::Result result = myOboe.openStream(&globalStream);
         if (result != oboe::Result::OK) {
+            if (callback) {
+                callback(1);
+            }
+
             alog("Failed to open stream");
             return;
         }
 
         result = globalStream->requestStart();
         if (result != oboe::Result::OK) {
+            if (callback) {
+                callback(2);
+            }
+
             alog("Failed to start stream");
             return;
+        }
+
+        if (callback) {
+            callback(0);
         }
 
         alog("Audio is initialized");
