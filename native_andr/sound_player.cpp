@@ -1,12 +1,10 @@
-#include <android/log.h>
 #include <chrono>  // Для работы с временем
 #include <cstdint> // Для int64_t
 #include <math.h>
 #include <oboe/Oboe.h>
-#include <stdarg.h>
 #include <stdlib.h>
+#include "my_log.h"
 
-#define LOG_TAG "Native Sound PLayer"
 #define SAMPLE_RATE 48000
 #define FREQUENCY 880.0  // Частота синусоиды в Гц
 #define FREQUENCY2 1760.0  // Частота синусоиды в Гц
@@ -22,7 +20,6 @@ typedef struct {
 
 using InitCallback = void(*)(int);
 
-void alog(const char *message, ...);
 Wave getSinewave(int sample_count, float freq);
 void logWave(Wave wave);
 oboe::AudioStreamBuilder makeOboeBuilder();
@@ -193,13 +190,6 @@ Wave getSinewave(int sample_count, float freq) {
 //--------------
 // UTIL STUFF
 //--------------
-
-void alog(const char *message, ...) {
-    va_list args;
-    va_start(args, message);
-    __android_log_vprint(ANDROID_LOG_INFO, LOG_TAG, message, args);
-    va_end(args);
-}
 
 //void measureTime() {
 //    auto currentTime = high_resolution_clock::now();
