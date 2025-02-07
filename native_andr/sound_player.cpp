@@ -1,8 +1,6 @@
 #include <chrono>  // Для работы с временем
 #include <cstdint> // Для int64_t
-#include <math.h>
 #include <oboe/Oboe.h>
-#include <stdlib.h>
 #include "audio_config.h"
 #include "my_log.h"
 #include "waveforms.h"
@@ -11,13 +9,11 @@ using namespace std::chrono;
 
 using InitCallback = void(*)(int);
 
-void logWave(Wave wave);
 oboe::AudioStreamBuilder makeOboeBuilder();
 //void measureTime();
 
 class AudioCallback : public oboe::AudioStreamDataCallback {
 public:
-//    AudioCallback(Wave wave) : wave(wave) {}
     AudioCallback() {}
 
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream* stream, void* audioData, int32_t numFrames) override {
@@ -57,12 +53,6 @@ public:
 
         return oboe::DataCallbackResult::Continue;
     }
-
-//    void setWave(Wave newWave) {
-//        wave = newWave;
-//    }
-//private:
-//    Wave wave;
 };
 
 oboe::AudioStream* globalStream = nullptr;
@@ -159,11 +149,3 @@ oboe::AudioStreamBuilder makeOboeBuilder() {
 //    auto duration = duration_cast<microseconds>(currentTime - startTime).count();
 //    alog("Time since start playing: %d microsec", duration);
 //}
-
-void logWave(Wave wave) {
-    // Выводим первые 10 значений синусоиды в лог для проверки.
-    alog("Generated Sine Wave Samples (Length: %d):", wave.length);
-    for (int i = 0; i < 10 && i < wave.length; i++) {
-        alog("Sample %d: %f", i, wave.data[i]);
-    }
-}
