@@ -3,9 +3,9 @@
 #include <math.h>
 #include <oboe/Oboe.h>
 #include <stdlib.h>
+#include "audio_config.h"
 #include "my_log.h"
 
-#define SAMPLE_RATE 48000
 #define FREQUENCY 880.0  // Частота синусоиды в Гц
 #define FREQUENCY2 1760.0  // Частота синусоиды в Гц
 
