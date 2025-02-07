@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.22)
 project(RhythmTrainer LANGUAGES CXX) # если используешь C++, укажи CXX вместо C
 
 # Добавляем ваш файл с кодом
-add_library(sound_player SHARED sound_player.cpp my_log.cpp)
+add_library(sound_player SHARED sound_player.cpp my_log.cpp waveforms.cpp)
 
 find_library(log-lib log)
 
