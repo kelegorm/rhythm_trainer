@@ -4,6 +4,7 @@
 #include "audio_config.h"
 #include "my_log.h"
 #include "waveforms.h"
+#include "audio_callback.h"
 
 using namespace std::chrono;
 
@@ -11,49 +12,6 @@ using InitCallback = void(*)(int);
 
 oboe::AudioStreamBuilder makeOboeBuilder();
 //void measureTime();
-
-class AudioCallback : public oboe::AudioStreamDataCallback {
-public:
-    AudioCallback() {}
-
-    oboe::DataCallbackResult onAudioReady(oboe::AudioStream* stream, void* audioData, int32_t numFrames) override {
-        auto *outputData = static_cast<float *>(audioData);
-
-        for (int i = 0; i < numFrames; ++i) {
-            float sample = 0.0f;
-
-            if (leftSound.isPlaying) {
-                sample += leftSound.data[leftSound.currentIndex] + 0.3f;
-                leftSound.currentIndex++;
-
-                // Проверить завершение звука
-                if (leftSound.currentIndex >= leftSound.length) {
-                    leftSound.isPlaying = false;  // Остановить звук
-                    leftSound.currentIndex = 0;  // Сбросить индекс
-                }
-            }
-
-            if (rightSound.isPlaying) {
-                sample += rightSound.data[rightSound.currentIndex] + 0.3f;
-                rightSound.currentIndex++;
-
-                // Проверить завершение звука
-                if (rightSound.currentIndex >= rightSound.length) {
-                    rightSound.isPlaying = false;  // Остановить звук
-                    rightSound.currentIndex = 0;  // Сбросить индекс
-                }
-            }
-
-            // Предотвратить клиппинг
-            if (sample > 1.0f) sample = 1.0f;
-            if (sample < -1.0f) sample = -1.0f;
-
-            outputData[i] = sample;
-        }
-
-        return oboe::DataCallbackResult::Continue;
-    }
-};
 
 oboe::AudioStream* globalStream = nullptr;
 AudioCallback* globalCallback = nullptr;
