@@ -25,8 +25,5 @@ Wave getSinewave(int sample_count, float freq) {
         result.data[i] = sinf(twoPi * freq * ((float)i / SAMPLE_RATE));
     }
 
-    result.currentIndex = 0;
-    result.isPlaying = false;
-
     return result;
 }

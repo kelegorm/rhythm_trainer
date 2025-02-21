@@ -1,10 +1,12 @@
 #include <chrono>  // Для работы с временем
 #include <cstdint> // Для int64_t
 #include <oboe/Oboe.h>
-#include "audio_config.h"
-#include "my_log.h"
-#include "waveforms.h"
 #include "audio_callback.h"
+#include "audio_config.h"
+#include "mixer.h"
+#include "my_log.h"
+#include "sampler.h"
+#include "waveforms.h"
 
 using namespace std::chrono;
 
@@ -14,6 +16,9 @@ oboe::AudioStreamBuilder makeOboeBuilder();
 //void measureTime();
 
 oboe::AudioStream* globalStream = nullptr;
+Mixer* globalMixer = nullptr;
+Sampler* leftSampler = nullptr;
+Sampler* rightSampler = nullptr;
 AudioCallback* globalCallback = nullptr;
 
 extern "C" {
@@ -21,8 +26,22 @@ extern "C" {
         alog("initializeAudio");
         if (globalStream != nullptr) return; // Поток уже открыт
 
+        // Создаем микшер
+        globalMixer = new Mixer();
+
+        // Создаем семплеры и задаем им звуки
+        leftSampler = new Sampler();
+        rightSampler = new Sampler();
+        leftSampler->setWave(leftSound);
+        rightSampler->setWave(rightSound);
+
+        // Регистрируем семплеры в микшере
+        globalMixer->addSource(leftSampler);
+        globalMixer->addSource(rightSampler);
+
+        globalCallback = new AudioCallback(globalMixer);
+
         oboe::AudioStreamBuilder myOboe = makeOboeBuilder(); // todo check if existed (but maybe not)
-        globalCallback = new AudioCallback();
         myOboe.setDataCallback(globalCallback);
 
         oboe::Result result = myOboe.openStream(&globalStream);
@@ -69,8 +88,7 @@ extern "C" {
             return;
         }
 
-        leftSound.isPlaying = true;
-        leftSound.currentIndex = 0;
+        leftSampler->trigger();
     }
 
     void playRight() {
@@ -79,8 +97,7 @@ extern "C" {
             return;
         }
 
-        rightSound.isPlaying = true;
-        rightSound.currentIndex = 0;
+        rightSampler->trigger();
     }
 
 }

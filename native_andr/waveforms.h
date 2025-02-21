@@ -6,9 +6,7 @@
 
 typedef struct {
     float* data;
-    int length; // длинна в семплах
-    int currentIndex;  // Текущий индекс воспроизведения
-    bool isPlaying;    // Активен ли звук
+    int length; // длина в семплах
 } Wave;
 
 extern Wave leftSound;
