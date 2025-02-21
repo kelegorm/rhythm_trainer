@@ -32,7 +32,10 @@ oboe::DataCallbackResult AudioCallback::onAudioReady(oboe::AudioStream* stream, 
         if (sample > 1.0f) sample = 1.0f;
         if (sample < -1.0f) sample = -1.0f;
 
-        outputData[i] = sample;
+        // Записываем итоговый сэмпл в оба канала
+//        outputData[i] = sample;
+        outputData[2 * i] = sample;       // левый канал
+        outputData[2 * i + 1] = sample;   // правый канал
     }
 
     return oboe::DataCallbackResult::Continue;
