@@ -20,6 +20,7 @@ private:
     double samplesPerTick; // дробное число сэмплов между ударами
     double phaseAcc;       // аккумулятор сэмплов для определения момента клика
     int tickPlaybackPos;   // -1, если тик не воспроизводится, или текущий индекс клика (0..metronomeSound.length-1)
+    int tickCounter;
 
     Sampler sound1Sampler;
     Sampler sound2Sampler;
