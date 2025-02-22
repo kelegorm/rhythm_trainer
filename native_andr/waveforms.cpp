@@ -1,12 +1,10 @@
 #include "waveforms.h"
 
-#define FREQUENCY 880.0  // Частота синусоиды в Гц
-#define FREQUENCY2 1760.0  // Частота синусоиды в Гц
+#define FREQUENCY 300.0  // Частота синусоиды в Гц
+#define FREQUENCY2 600.0  // Частота синусоиды в Гц
 
-Wave getSinewave(int sample_count, float freq);
-
-Wave leftSound = getSinewave(1024, FREQUENCY);
-Wave rightSound = getSinewave(1024, FREQUENCY2);
+Wave leftSound = getSinewave(4024, FREQUENCY);
+Wave rightSound = getSinewave(3024, FREQUENCY2);
 
 Wave getSinewave(int sample_count, float freq) {
     Wave result;

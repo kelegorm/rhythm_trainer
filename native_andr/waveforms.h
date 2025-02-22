@@ -9,5 +9,7 @@ typedef struct {
     int length; // длина в семплах
 } Wave;
 
+Wave getSinewave(int sample_count, float freq);
+
 extern Wave leftSound;
 extern Wave rightSound;
