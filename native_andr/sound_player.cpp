@@ -3,6 +3,7 @@
 #include <oboe/Oboe.h>
 #include "audio_callback.h"
 #include "audio_config.h"
+#include "metronome.h"
 #include "mixer.h"
 #include "my_log.h"
 #include "sampler.h"
@@ -19,6 +20,7 @@ oboe::AudioStream* globalStream = nullptr;
 Mixer* globalMixer = nullptr;
 Sampler* leftSampler = nullptr;
 Sampler* rightSampler = nullptr;
+Metronome* metronome = nullptr;
 AudioCallback* globalCallback = nullptr;
 
 extern "C" {
@@ -35,9 +37,15 @@ extern "C" {
         leftSampler->setWave(leftSound);
         rightSampler->setWave(rightSound);
 
+        Wave metronomeSound1 = getSinewave(256, 800.0f);
+        Wave metronomeSound2 = getSinewave(256, 1600.0f);
+        metronome = new Metronome(120, metronomeSound1, metronomeSound2);
+        metronome->run();
+
         // Регистрируем семплеры в микшере
         globalMixer->addSource(leftSampler);
         globalMixer->addSource(rightSampler);
+        globalMixer->addSource(metronome);
 
         globalCallback = new AudioCallback(globalMixer);
 
@@ -100,6 +108,13 @@ extern "C" {
         rightSampler->trigger();
     }
 
+    void runMetronome() {
+        metronome->run();
+    }
+
+    void stopMetronome() {
+        metronome->stop();
+    }
 }
 
 oboe::AudioStreamBuilder makeOboeBuilder() {
