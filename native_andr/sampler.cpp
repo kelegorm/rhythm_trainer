@@ -13,6 +13,12 @@ void Sampler::trigger(int offset) {
     startOffset = offset;
 }
 
+void Sampler::stop() {
+    isPlaying = false;
+    currentIndex = 0;
+    startOffset = 0;
+}
+
 void Sampler::getSamples(float* buffer, int numFrames) {
     // it makes logic much simpler
     std::memset(buffer, 0, sizeof(float) * numFrames * 2);

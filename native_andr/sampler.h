@@ -11,11 +11,14 @@ public:
 
     void trigger(int offset = 0);
 
+    void stop();
+
     void getSamples(float* buffer, int numFrames) override;
+
+    bool isPlaying;  // Активен ли звук
 
 private:
     Wave wave;
     int currentIndex;  // Текущий индекс воспроизведения
-    bool isPlaying;    // Активен ли звук
     int startOffset;   // offset (в фреймах) для начала воспроизведения текущего триггера
 };
