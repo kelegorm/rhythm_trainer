@@ -7,6 +7,7 @@
 #include "mixer.h"
 #include "my_log.h"
 #include "sampler.h"
+#include "transport.h"
 #include "waveforms.h"
 
 using namespace std::chrono;
@@ -37,9 +38,10 @@ extern "C" {
         leftSampler->setWave(leftSound);
         rightSampler->setWave(rightSound);
 
+        Transport* transport = new Transport(120);
         Wave metronomeSound1 = getSinewave(256, 800.0f);
         Wave metronomeSound2 = getSinewave(256, 1600.0f);
-        metronome = new Metronome(120, metronomeSound1, metronomeSound2);
+        metronome = new Metronome(transport, metronomeSound1, metronomeSound2);
         metronome->run();
 
         // Регистрируем семплеры в микшере
@@ -47,7 +49,7 @@ extern "C" {
         globalMixer->addSource(rightSampler);
         globalMixer->addSource(metronome);
 
-        globalCallback = new AudioCallback(globalMixer);
+        globalCallback = new AudioCallback(transport, globalMixer);
 
         oboe::AudioStreamBuilder myOboe = makeOboeBuilder(); // todo check if existed (but maybe not)
         myOboe.setDataCallback(globalCallback);

@@ -2,11 +2,12 @@
 
 #include "audio_source.h"
 #include "sampler.h"
+#include "transport.h"
 #include "waveforms.h"
 
 class Metronome : public AudioSource {
 public:
-    Metronome(double bpm, Wave sound1, Wave sound2);
+    Metronome(Transport* transport, Wave sound1, Wave sound2);
 
     void run();
 
@@ -15,12 +16,9 @@ public:
     void getSamples(float* buffer, int numFrames) override;
 
 private:
-    bool isPlaying;
-    double bpm;
-    double samplesPerTick; // дробное число сэмплов между ударами
-    double phaseAcc;       // аккумулятор сэмплов для определения момента клика
-    int tickPlaybackPos;   // -1, если тик не воспроизводится, или текущий индекс клика (0..metronomeSound.length-1)
-    int tickCounter;
+    bool isEnabled;
+
+    Transport* transport;
 
     Sampler sound1Sampler;
     Sampler sound2Sampler;
