@@ -6,7 +6,9 @@
 #include "metronome.h"
 #include "mixer.h"
 #include "my_log.h"
+#include "note.h"
 #include "sampler.h"
+#include "sequencer.h"
 #include "transport.h"
 #include "waveforms.h"
 
@@ -47,10 +49,23 @@ extern "C" {
         metronome = make_shared<Metronome>(transport, metronomeSound1, metronomeSound2);
         metronome->run();
 
+        vector<Note> notes;
+        notes.push_back(Note{0, 0.001});  // сильный удар на 1-ю долю
+        notes.push_back(Note{1, 1.0});  // слабый удар на 2-ю долю
+        notes.push_back(Note{1, 2.0});  // слабый удар на 3-ю долю
+        notes.push_back(Note{1, 3.0});  // слабый удар на 4-ю долю
+
+        vector<Wave> soundBank;
+        soundBank.push_back(getSinewave(256, 1600.0f)); // strong strike
+        soundBank.push_back(getSinewave(256, 800.0f)); // weak
+
+        shared_ptr<Sequencer> rhythmPlayer = make_shared<Sequencer>(transport, notes, soundBank, 4.0);
+
         // Регистрируем семплеры в микшере
         globalMixer->addSource(leftSampler);
         globalMixer->addSource(rightSampler);
         globalMixer->addSource(metronome);
+        globalMixer->addSource(rhythmPlayer);
 
         globalCallback = new AudioCallback(transport, globalMixer);
 
