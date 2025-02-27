@@ -10,6 +10,9 @@
 #include "transport.h"
 #include "waveforms.h"
 
+using std::shared_ptr;
+using std::make_shared;
+using std::vector;
 using namespace std::chrono;
 
 using InitCallback = void(*)(int);
@@ -19,9 +22,9 @@ oboe::AudioStreamBuilder makeOboeBuilder();
 
 oboe::AudioStream* globalStream = nullptr;
 Mixer* globalMixer = nullptr;
-Sampler* leftSampler = nullptr;
-Sampler* rightSampler = nullptr;
-Metronome* metronome = nullptr;
+shared_ptr<Sampler> leftSampler;
+shared_ptr<Sampler> rightSampler;
+shared_ptr<Metronome> metronome;
 AudioCallback* globalCallback = nullptr;
 
 extern "C" {
@@ -33,15 +36,15 @@ extern "C" {
         globalMixer = new Mixer();
 
         // Создаем семплеры и задаем им звуки
-        leftSampler = new Sampler();
-        rightSampler = new Sampler();
+        leftSampler = make_shared<Sampler>();
+        rightSampler = make_shared<Sampler>();
         leftSampler->setWave(leftSound);
         rightSampler->setWave(rightSound);
 
         Transport* transport = new Transport(120);
         Wave metronomeSound1 = getSinewave(256, 800.0f);
         Wave metronomeSound2 = getSinewave(256, 1600.0f);
-        metronome = new Metronome(transport, metronomeSound1, metronomeSound2);
+        metronome = make_shared<Metronome>(transport, metronomeSound1, metronomeSound2);
         metronome->run();
 
         // Регистрируем семплеры в микшере

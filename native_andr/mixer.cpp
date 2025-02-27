@@ -1,18 +1,33 @@
 #include "mixer.h"
+#include "my_log.h"
 #include <cstring>
+#include <memory>
 
-void Mixer::addSource(AudioSource* source) {
+using std::fill;
+using std::shared_ptr;
+using std::vector;
+
+void Mixer::addSource(const shared_ptr<AudioSource>& source) {
+    if (!source) {
+        // what to do then? throw?
+        return;
+    }
     sources.push_back(source);
 }
 
 void Mixer::mix(float* output, int numFrames) {
-    ::memset(output, 0, sizeof(float) * numFrames * 2);
+    memset(output, 0, sizeof(float) * numFrames * 2);
 
-    std::vector<float> tempBuffer;//(numFrames * 2, 0); // todo make more global
+    vector<float> tempBuffer;//(numFrames * 2, 0); // todo make more global
     tempBuffer.resize(numFrames * 2);
 
     for (auto src : sources) {
-        std::fill(tempBuffer.begin(), tempBuffer.end(), 0);
+        if (!src) {
+            // что делаем тогда??
+            continue;
+        }
+
+        fill(tempBuffer.begin(), tempBuffer.end(), 0);
         src->getSamples(tempBuffer.data(), numFrames);
 
         for (int i = 0; i < numFrames * 2; ++i) {
