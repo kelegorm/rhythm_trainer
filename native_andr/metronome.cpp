@@ -4,8 +4,11 @@
 #include <cmath>
 #include <cstring>
 
+using std::round;
+using std::ceil;
+
 Metronome::Metronome(Transport* transport, Wave sound1, Wave sound2)
-    : isEnabled(true),
+    : isEnabled(false),
       transport(transport)
 {
     sound1Sampler.setWave(sound1);
@@ -26,24 +29,21 @@ void Metronome::stop() {
 void Metronome::getSamples(float *buffer, int numFrames) {
     // Если транспорт не играет, заполняем буфер тишиной и выходим
     if (!transport->isPlaying() || !isEnabled) {
-        std::memset(buffer, 0, sizeof(float) * numFrames * 2);
+        memset(buffer, 0, sizeof(float) * numFrames * 2);
         return;
     }
 
     int globalStart = transport->getCurrentSample();
     int globalEnd = globalStart + numFrames;
 
-    alog("globalStart: %d", globalStart);
-
-    int nextTickNumber = static_cast<int>(std::ceil(globalStart / transport->framesPerBeat()));
+    int nextTickNumber = static_cast<int>(ceil(globalStart / transport->framesPerBeat()));
     double nextTickTime = nextTickNumber * transport->framesPerBeat();
 
     if (nextTickTime < globalEnd) {
-        int offset = (int)(std::round(nextTickTime - globalStart));
+        int offset = (int)(round(nextTickTime - globalStart));
 
         if (nextTickNumber % 4 == 0) {
             sound2Sampler.trigger(offset);   // Sound2 on the first tick
-            if (globalStart == 0) alog("It first tick, sound2Sampler should play");
         } else {
             sound1Sampler.trigger(offset);   // Sound1 on the next three ticks
         }

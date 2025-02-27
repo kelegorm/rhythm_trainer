@@ -8,7 +8,7 @@ Wave rightSound = getSinewave(3024, FREQUENCY2);
 
 Wave getSinewave(int sample_count, float freq) {
     Wave result;
-    result.data = (float*)malloc(sample_count * sizeof(float));
+    result.data = (float*)malloc(sample_count * sizeof(float)); // TODO release memory??
 
     if (result.data == NULL) {
         alog("Memory allocation failed for sine wave generating.");

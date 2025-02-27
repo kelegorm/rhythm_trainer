@@ -4,7 +4,7 @@
 #include "audio_config.h"
 #include "my_log.h"
 
-typedef struct {
+typedef struct { // TODO make immutable, const. Use vector. Make class maybe.
     float* data;
     int length; // длина в семплах
 } Wave;

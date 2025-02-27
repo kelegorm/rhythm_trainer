@@ -1,10 +1,16 @@
 #include "sampler.h"
 #include <cstring>
 
-Sampler::Sampler() : isPlaying(false), startOffset(0) {}
+Sampler::Sampler(Wave wave) 
+    : wave(wave), 
+      isPlaying(false), 
+      startOffset(0) {}
 
 void Sampler::setWave(Wave &wave) {
     this->wave = wave;
+    isPlaying = false;
+    currentIndex = 0;
+    startOffset = 0;
 }
 
 void Sampler::trigger(int offset) {

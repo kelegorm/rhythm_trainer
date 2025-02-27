@@ -5,7 +5,7 @@
 
 class Sampler : public AudioSource {
 public:
-    Sampler();
+    Sampler(Wave wave = Wave());
 
     void setWave(Wave& wave);
 
