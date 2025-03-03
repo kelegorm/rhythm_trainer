@@ -1,24 +1,25 @@
 import 'dart:ffi' as ffi;
 
-typedef _CppInitCallback = ffi.Void Function(ffi.Int32);
-typedef InitializeAudioCallback = void Function(int);
-
 final ffi.DynamicLibrary _soundPlayerLib = ffi.DynamicLibrary.open("libsound_player.so");
 
+//--------------------------------------
+// Play Left Function
+//--------------------------------------
+
 final playLeft = _soundPlayerLib.lookupFunction<ffi.Void Function(), void Function()>("playLeft");
+
+//--------------------------------------
+// Play Right Function
+//--------------------------------------
+
 final playRight = _soundPlayerLib.lookupFunction<ffi.Void Function(), void Function()>("playRight");
 
-InitializeAudioCallback? _audioInitCallback;
-void initializeAudioNativeCallback(int result) {
-  final callback = _audioInitCallback;
-  _audioInitCallback = null;
+//--------------------------------------
+// Initialize Audio Function
+//--------------------------------------
 
-  if (callback != null) {
-    callback(result);
-  } else {
-    throw Exception('_audioInitCallback is null, but should not.');
-  }
-}
+typedef _CppInitCallback = ffi.Void Function(ffi.Int32);
+typedef InitializeAudioCallback = void Function(int);
 
 /// Starts audio initialisation on native side. Calls callback after it's
 /// finished.
@@ -31,6 +32,18 @@ void initializeAudio(InitializeAudioCallback callback) {
 
   final nativeCallbackPointer = ffi.Pointer.fromFunction<ffi.Void Function(ffi.Int32)>(initializeAudioNativeCallback);
   _initializeAudioRemote(nativeCallbackPointer);
+}
+
+InitializeAudioCallback? _audioInitCallback;
+void initializeAudioNativeCallback(int result) {
+  final callback = _audioInitCallback;
+  _audioInitCallback = null;
+
+  if (callback != null) {
+    callback(result);
+  } else {
+    throw Exception('_audioInitCallback is null, but should not.');
+  }
 }
 
 final _initializeAudioRemote = _soundPlayerLib.lookupFunction<
