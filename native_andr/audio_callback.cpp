@@ -1,6 +1,11 @@
 #include "audio_callback.h"
 
-AudioCallback::AudioCallback(Transport* transport, Mixer* mixer)
+using std::shared_ptr;
+
+AudioCallback::AudioCallback(
+    const shared_ptr<Transport>& transport,
+    const shared_ptr<Mixer>& mixer
+)
     : transport(transport),
       mixer(mixer)
 {

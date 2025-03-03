@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 #include "audio_source.h"
 #include "note.h"
@@ -9,8 +10,21 @@
 
 class Sequencer : public AudioSource {
 public:
-    Sequencer(Transport* transport, const std::vector<Note>& notes, const std::vector<Wave>& soundBank, double loopLength);
-    ~Sequencer();
+    /**
+     * @brief Constructs a Sequencer.
+     *
+     * @param transport Pointer to the Transport.
+     * @param notes Vector of notes (beat-based).
+     * @param soundBank Vector of shared pointers to Wave objects.
+     * @param loopLength Length of the loop in beats.
+     */
+    Sequencer(
+        const std::shared_ptr<Transport>& transport,
+        const std::vector<Note>& notes,
+        const std::vector<std::shared_ptr<const Wave>>& soundBank,
+        double loopLength
+    );
+    ~Sequencer() override;
 
     void getSamples(float* buffer, int numFrames) override;
 
@@ -24,7 +38,7 @@ private:
 
     static std::vector<NoteEvent> getShiftedEvents(const std::vector<NoteEvent>& events, double loopLengthFrames, double posInLoop);
 
-    Transport* transport;
+    const std::shared_ptr<Transport> transport;
     std::vector<NoteEvent> events;
     std::vector<std::shared_ptr<Sampler>> samplers;
     double loopLengthBeats;

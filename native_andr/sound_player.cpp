@@ -22,8 +22,7 @@ using InitCallback = void(*)(int);
 oboe::AudioStreamBuilder makeOboeBuilder();
 //void measureTime();
 
-oboe::AudioStream* globalStream = nullptr;
-Mixer* globalMixer = nullptr;
+shared_ptr<oboe::AudioStream> globalStream;
 shared_ptr<Sampler> leftSampler;
 shared_ptr<Sampler> rightSampler;
 shared_ptr<Metronome> metronome;
@@ -35,19 +34,21 @@ extern "C" {
         if (globalStream != nullptr) return; // Поток уже открыт
 
         // Создаем микшер
-        globalMixer = new Mixer();
+        auto globalMixer = make_shared<Mixer>();
 
         // Создаем семплеры и задаем им звуки
-        leftSampler = make_shared<Sampler>();
-        rightSampler = make_shared<Sampler>();
-        leftSampler->setWave(leftSound);
-        rightSampler->setWave(rightSound);
+        leftSampler = make_shared<Sampler>(
+            make_shared<Wave>(getSineWave(4024, 300.0f))
+        );
+        rightSampler = make_shared<Sampler>(
+            make_shared<Wave>(getSineWave(3024, 600.0f))
+        );
 
-        Transport* transport = new Transport(120);
-        Wave metronomeSound1 = getSinewave(256, 800.0f);
-        Wave metronomeSound2 = getSinewave(256, 1600.0f);
+        auto transport = make_shared<Transport>(120);
+        auto metronomeSound1 = make_shared<Wave>(getSineWave(256, 800.0f));
+        auto metronomeSound2 = make_shared<Wave>(getSineWave(256, 1600.0f));
         metronome = make_shared<Metronome>(transport, metronomeSound1, metronomeSound2);
-        metronome->run();
+//        metronome->run();
 
         vector<Note> notes;
         notes.push_back(Note{0, 0.001});  // сильный удар на 1-ю долю
@@ -55,9 +56,9 @@ extern "C" {
         notes.push_back(Note{1, 2.0});  // слабый удар на 3-ю долю
         notes.push_back(Note{1, 3.0});  // слабый удар на 4-ю долю
 
-        vector<Wave> soundBank;
-        soundBank.push_back(getSinewave(256, 1600.0f)); // strong strike
-        soundBank.push_back(getSinewave(256, 800.0f)); // weak
+        vector<shared_ptr<const Wave>> soundBank;
+        soundBank.push_back(make_shared<Wave>(getSineWave(256, 1600.0f))); // strong strike
+        soundBank.push_back(make_shared<Wave>(getSineWave(256, 800.0f))); // weak
 
         shared_ptr<Sequencer> rhythmPlayer = make_shared<Sequencer>(transport, notes, soundBank, 4.0);
 
@@ -72,7 +73,7 @@ extern "C" {
         oboe::AudioStreamBuilder myOboe = makeOboeBuilder(); // todo check if existed (but maybe not)
         myOboe.setDataCallback(globalCallback);
 
-        oboe::Result result = myOboe.openStream(&globalStream);
+        oboe::Result result = myOboe.openStream(globalStream);
         if (result != oboe::Result::OK) {
             if (callback) {
                 callback(1);

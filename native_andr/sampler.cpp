@@ -1,69 +1,74 @@
 #include "sampler.h"
 #include <cstring>
 
-Sampler::Sampler(Wave wave) 
-    : wave(wave), 
-      isPlaying(false), 
-      startOffset(0) {}
+using std::shared_ptr;
+using std::memcpy;
+using std::memset;
 
-void Sampler::setWave(Wave &wave) {
-    this->wave = wave;
+Sampler::Sampler(const shared_ptr<const Wave>& wave)
+    : _wave(wave),
+      isPlaying(false),
+      _startOffset(0),
+      _currentIndex(0)
+{}
+
+void Sampler::setWave(const shared_ptr<const Wave>& wave) {
+    this->_wave = wave;
     isPlaying = false;
-    currentIndex = 0;
-    startOffset = 0;
+    _currentIndex = 0;
+    _startOffset = 0;
 }
 
 void Sampler::trigger(int offset) {
     isPlaying = true;
-    currentIndex = 0;
-    startOffset = offset;
+    _currentIndex = 0;
+    _startOffset = offset;
 }
 
 void Sampler::stop() {
     isPlaying = false;
-    currentIndex = 0;
-    startOffset = 0;
+    _currentIndex = 0;
+    _startOffset = 0;
 }
 
 void Sampler::getSamples(float* buffer, int numFrames) {
     // it makes logic much simpler
-    std::memset(buffer, 0, sizeof(float) * numFrames * 2);
+    memset(buffer, 0, sizeof(float) * numFrames * 2);
 
     // Если звук не активен, сразу заполняем буфер тишиной
     if (!isPlaying) {
         return;
     }
 
-    if (startOffset >= numFrames) {
-        startOffset -= numFrames;
+    if (_startOffset >= numFrames) {
+        _startOffset -= numFrames;
         return;
     }
 
     int playStartFrame = 0;
     // Если это первый вызов после trigger и задан offset,
-    // оставляем первые startOffset фреймов нулевыми.
-    if (startOffset > 0) {
-        playStartFrame = startOffset;
-        startOffset = 0; // офсет применён, сбрасываем его
+    // оставляем первые _startOffset фреймов нулевыми.
+    if (_startOffset > 0) {
+        playStartFrame = _startOffset;
+        _startOffset = 0; // офсет применён, сбрасываем его
     }
 
     // Сколько сэмплов осталось в вейве?
-    int soundFramesLeft = wave.length - currentIndex;
+    int framesLeftInWave = _wave->numFrames - _currentIndex;
     int framesAvailableInBuffer = numFrames - playStartFrame;
     // Сколько фреймов (каждый фрейм – 2 сэмпла для стерео) можно скопировать без выхода за пределы
-    int framesToCopy = (soundFramesLeft < framesAvailableInBuffer)
-            ? soundFramesLeft
+    int framesToCopy = (framesLeftInWave < framesAvailableInBuffer)
+            ? framesLeftInWave
             : framesAvailableInBuffer;
 
-    //todo optimize: make wave stereo and use memcpy instead of cycle
-    for (int i = 0; i < framesToCopy; i++) {
-        float sample = wave.data[currentIndex + i];
-        buffer[2 * (playStartFrame + i)] = sample;
-        buffer[2 * (playStartFrame + i) + 1] = sample;
-    }
+    memcpy(
+        buffer + playStartFrame * 2,              // Destination: смещение в буфере в элементах float
+        _wave->data.data() + _currentIndex * 2,     // Source: смещение в векторе _wave->data
+        framesToCopy * 2 * sizeof(float)            // Количество байт для копирования
+    );
 
-    currentIndex += framesToCopy;
-    if (currentIndex >= wave.length) {
+    _currentIndex += framesToCopy;
+    if (_currentIndex >= _wave->numFrames) {
         isPlaying = false;
     }
 }

@@ -13,17 +13,19 @@ using std::shared_ptr;
 using std::sort;
 using std::vector;
 
-Sequencer::Sequencer(Transport* transport, const vector<Note>& notes, const vector<Wave>& soundBank, double loopLengthBeats)
-        : transport(transport), loopLengthBeats(loopLengthBeats), isEnabled(true)
+Sequencer::Sequencer(
+    const shared_ptr<Transport>& transport,
+    const vector<Note>& notes,
+    const vector<shared_ptr<const Wave>>& soundBank,
+    double loopLengthBeats
+)
+    : transport(transport), loopLengthBeats(loopLengthBeats), isEnabled(false)
 {
     double fpb = transport->framesPerBeat();
     loopLengthFrames = loopLengthBeats * fpb;
 
     for (const auto& note : notes) {
-        NoteEvent event;
-        event.soundId = note.soundId;
-        event.startFrame = note.startBeat * fpb;
-        events.push_back(event);
+        events.push_back(NoteEvent{note.soundId, note.startBeat * fpb});
     }
     
     // Сортируем события по времени
@@ -32,8 +34,8 @@ Sequencer::Sequencer(Transport* transport, const vector<Note>& notes, const vect
     });
 
     samplers.reserve(soundBank.size());
-    for (size_t i = 0; i < soundBank.size(); i++) {
-        auto sampler = make_shared<Sampler>(soundBank[i]);
+    for (const auto & wave : soundBank) {
+        auto sampler = make_shared<Sampler>(wave);
         samplers.push_back(sampler);
         internalMixer.addSource(sampler);
     }
@@ -50,7 +52,7 @@ void Sequencer::getSamples(float* buffer, int numFrames) {
         return;
     }
 
-    int posInLoop = fmod(static_cast<double>(transport->getCurrentSample()), loopLengthFrames);
+    double posInLoop = fmod(static_cast<double>(transport->getCurrentSample()), loopLengthFrames);
 
     auto shiftedEvents = getShiftedEvents(events, loopLengthFrames, posInLoop);
     for (const auto& event : shiftedEvents) {
@@ -66,7 +68,7 @@ void Sequencer::getSamples(float* buffer, int numFrames) {
 vector<Sequencer::NoteEvent> Sequencer::getShiftedEvents(const vector<NoteEvent>& events, double loopLengthFrames, double loopStart) {
     vector<NoteEvent> shiftedEvents;
     for (const auto& event : events) {
-        int shifted = event.startFrame - loopStart;
+        auto shifted = event.startFrame - loopStart;
         if (shifted < 0) {
             shifted += loopLengthFrames;
         }

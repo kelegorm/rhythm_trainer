@@ -4,10 +4,15 @@
 #include "sampler.h"
 #include "transport.h"
 #include "waveforms.h"
+#include <memory>
 
 class Metronome : public AudioSource {
 public:
-    Metronome(Transport* transport, Wave sound1, Wave sound2);
+    Metronome(
+        const std::shared_ptr<Transport>& transport,
+        const std::shared_ptr<const Wave>& sound1,
+        const std::shared_ptr<const Wave>& sound2
+    );
 
     void run();
 
@@ -18,7 +23,7 @@ public:
 private:
     bool isEnabled;
 
-    Transport* transport;
+    const std::shared_ptr<Transport> transport;
 
     Sampler sound1Sampler;
     Sampler sound2Sampler;

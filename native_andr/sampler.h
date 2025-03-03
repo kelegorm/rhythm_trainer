@@ -2,12 +2,13 @@
 
 #include "audio_source.h"
 #include "waveforms.h"
+#include <memory>
 
 class Sampler : public AudioSource {
 public:
-    Sampler(Wave wave = Wave());
+    explicit Sampler(const std::shared_ptr<const Wave>& wave = nullptr);
 
-    void setWave(Wave& wave);
+    void setWave(const std::shared_ptr<const Wave>& wave);
 
     void trigger(int offset = 0);
 
@@ -18,7 +19,11 @@ public:
     bool isPlaying;  // Активен ли звук
 
 private:
-    Wave wave;
-    int currentIndex;  // Текущий индекс воспроизведения
-    int startOffset;   // offset (в фреймах) для начала воспроизведения текущего триггера
+    std::shared_ptr<const Wave> _wave;
+
+    /// Current playback index (in frames)
+    int _currentIndex;
+
+    /// Offset (in frames) for playback start
+    int _startOffset;
 };

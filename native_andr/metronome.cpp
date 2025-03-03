@@ -6,8 +6,13 @@
 
 using std::round;
 using std::ceil;
+using std::shared_ptr;
 
-Metronome::Metronome(Transport* transport, Wave sound1, Wave sound2)
+Metronome::Metronome(
+    const shared_ptr<Transport>& transport,
+    const shared_ptr<const Wave>& sound1,
+    const shared_ptr<const Wave>& sound2
+)
     : isEnabled(false),
       transport(transport)
 {

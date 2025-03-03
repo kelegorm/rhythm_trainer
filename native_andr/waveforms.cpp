@@ -1,27 +1,20 @@
 #include "waveforms.h"
 
-#define FREQUENCY 300.0  // Частота синусоиды в Гц
-#define FREQUENCY2 600.0  // Частота синусоиды в Гц
+using std::vector;
 
-Wave leftSound = getSinewave(4024, FREQUENCY);
-Wave rightSound = getSinewave(3024, FREQUENCY2);
+namespace {
+    constexpr float twoPi = 6.283185307179586476925286766559f;
+}
 
-Wave getSinewave(int sample_count, float freq) {
-    Wave result;
-    result.data = (float*)malloc(sample_count * sizeof(float)); // TODO release memory??
+Wave getSineWave(int sampleCount, float freq) {
+    vector<float> samples(sampleCount);
+    float factor = twoPi * freq / SAMPLE_RATE;
 
-    if (result.data == NULL) {
-        alog("Memory allocation failed for sine wave generating.");
-        result.length = 0;
-        return result;
+    for (int i = 0; i < sampleCount; i++) {
+        float sample = sinf(factor * i);
+        samples[i * 2] = sample;
+        samples[i * 2 + 1] = sample;
     }
 
-    result.length = sample_count;
-
-    const float twoPi = 6.283185307179586476925286766559f;
-    for (int i = 0; i < sample_count; i++) {
-        result.data[i] = sinf(twoPi * freq * ((float)i / SAMPLE_RATE));
-    }
-
-    return result;
+    return Wave{samples};
 }
