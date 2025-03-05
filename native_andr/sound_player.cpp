@@ -27,12 +27,13 @@ oboe::AudioStreamBuilder makeOboeBuilder();
 shared_ptr<oboe::AudioStream> globalStream;
 shared_ptr<Sampler> leftSampler;
 shared_ptr<Sampler> rightSampler;
+shared_ptr<Transport> transport;
 shared_ptr<Metronome> metronome;
-AudioCallback* globalCallback = nullptr;
+shared_ptr<AudioCallback> globalCallback;
 
 extern "C" {
     void initializeAudio(InitCallback callback) {
-        alog("initializeAudio");
+        alog("Started initializing Audio");
         if (globalStream != nullptr) return; // Поток уже открыт
 
 //        testGetSineWave();
@@ -48,7 +49,7 @@ extern "C" {
             make_shared<Wave>(getSineWave(3024, 600.0f))
         );
 
-        auto transport = make_shared<Transport>(120);
+        transport = make_shared<Transport>(120);
         auto metronomeSound1 = make_shared<Wave>(getSineWave(256, 800.0f));
         auto metronomeSound2 = make_shared<Wave>(getSineWave(256, 1600.0f));
         metronome = make_shared<Metronome>(transport, metronomeSound1, metronomeSound2);
@@ -72,10 +73,10 @@ extern "C" {
         globalMixer->addSource(metronome);
         globalMixer->addSource(rhythmPlayer);
 
-        globalCallback = new AudioCallback(transport, globalMixer);
+        globalCallback = make_shared<AudioCallback>(transport, globalMixer);
 
         oboe::AudioStreamBuilder myOboe = makeOboeBuilder(); // todo check if existed (but maybe not)
-        myOboe.setDataCallback(globalCallback);
+        myOboe.setDataCallback(globalCallback.get());
 
         oboe::Result result = myOboe.openStream(globalStream);
         if (result != oboe::Result::OK) {
@@ -105,13 +106,12 @@ extern "C" {
     }
 
     void cleanupAudioStream() {
-        if (globalStream != nullptr) {
+        if (globalStream) {
             globalStream->stop();
             globalStream->close();
-            globalStream = nullptr;
+            globalStream.reset();
         }
-        delete globalCallback;
-        globalCallback = nullptr;
+        globalCallback.reset();
         alog("Audio stream cleaned up!");
     }
 
@@ -146,7 +146,7 @@ oboe::AudioStreamBuilder makeOboeBuilder() {
     oboe::AudioStreamBuilder builder;
 
     builder.setFormat(oboe::AudioFormat::Float)
-            ->setBufferCapacityInFrames(128)
+            ->setBufferCapacityInFrames(256)
             ->setChannelCount(oboe::ChannelCount::Stereo)
             ->setSampleRate(SAMPLE_RATE)
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
