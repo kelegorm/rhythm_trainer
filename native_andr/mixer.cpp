@@ -18,12 +18,13 @@ void Mixer::addSource(const shared_ptr<AudioSource>& source) {
 void Mixer::mix(float* output, int numFrames) {
     memset(output, 0, sizeof(float) * numFrames * 2);
 
-    vector<float> tempBuffer;//(numFrames * 2, 0); // todo make more global
-    tempBuffer.resize(numFrames * 2);
+    if (tempBuffer.size() != numFrames * 2) {
+        tempBuffer.resize(numFrames * 2);
+    }
 
     for (auto src : sources) {
         if (!src) {
-            // что делаем тогда??
+            // todo this is the issue, need to log.
             continue;
         }
 

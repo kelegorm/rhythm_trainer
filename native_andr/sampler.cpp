@@ -1,3 +1,4 @@
+#include "my_log.h"
 #include "sampler.h"
 #include <cstring>
 
@@ -39,6 +40,11 @@ void Sampler::getSamples(float* buffer, int numFrames) {
     if (!isPlaying) {
         return;
     }
+
+    if (!_wave) {
+        // throw or mark, it's a big issue. Or not? Sampler in DAw can be without audio data as init state.
+        return;
+    };
 
     if (_startOffset >= numFrames) {
         _startOffset -= numFrames;

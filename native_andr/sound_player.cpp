@@ -15,12 +15,14 @@
 using std::shared_ptr;
 using std::make_shared;
 using std::vector;
-using namespace std::chrono;
+//using namespace std::chrono;
 
 using InitCallback = void(*)(int);
 
-oboe::AudioStreamBuilder makeOboeBuilder();
+void testGetSineWave();
 //void measureTime();
+
+oboe::AudioStreamBuilder makeOboeBuilder();
 
 shared_ptr<oboe::AudioStream> globalStream;
 shared_ptr<Sampler> leftSampler;
@@ -32,6 +34,8 @@ extern "C" {
     void initializeAudio(InitCallback callback) {
         alog("initializeAudio");
         if (globalStream != nullptr) return; // Поток уже открыт
+
+//        testGetSineWave();
 
         // Создаем микшер
         auto globalMixer = make_shared<Mixer>();
@@ -160,3 +164,21 @@ oboe::AudioStreamBuilder makeOboeBuilder() {
 //    auto duration = duration_cast<microseconds>(currentTime - startTime).count();
 //    alog("Time since start playing: %d microsec", duration);
 //}
+
+void testGetSineWave() {
+    using namespace std::chrono;
+    const int iterations = 1000;
+    volatile int totalFrames = 0;  // volatile для предотвращения оптимизации
+
+    auto start = high_resolution_clock::now();
+    for (int i = 0; i < iterations; i++) {
+        // Например, генерируем синусоиду с sampleCount = 4024 и частотой 300 Гц
+        Wave wave = getSineWave(4024, 300.0f + i);
+        totalFrames += wave.numFrames;
+    }
+    auto end = high_resolution_clock::now();
+
+    auto duration = duration_cast<milliseconds>(end - start).count();
+
+    alog("Sine by sinf. Time, ms: %d, total frames: %d", duration, totalFrames);
+}

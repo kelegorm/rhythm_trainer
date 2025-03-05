@@ -10,4 +10,6 @@ public:
     void mix(float* output, int numFrames);
 private:
     std::vector<std::shared_ptr<AudioSource>> sources;
+    // Temporary buffer to load samples from next audio source.
+    std::vector<float> tempBuffer;
 };
