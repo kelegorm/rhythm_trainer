@@ -26,4 +26,9 @@ private:
 
     /// Offset (in frames) for playback start
     int _startOffset;
+
+    /// Frame when fade out will apply  to the wave t prevent click.
+    int fadeOutStartWaveFrame = 0;
+
+    void calcFadeOutStart();
 };
