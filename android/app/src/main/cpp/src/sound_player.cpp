@@ -1,16 +1,16 @@
 #include <chrono>  // Для работы с временем
 #include <cstdint> // Для int64_t
 #include <oboe/Oboe.h>
-#include "../include/audio_callback.h"
-#include "../include/audio_config.h"
-#include "../include/metronome.h"
-#include "../include/mixer.h"
-#include "../include/my_log.h"
-#include "../include/note.h"
-#include "../include/sampler.h"
-#include "../include/sequencer.h"
-#include "../include/transport.h"
-#include "../include/waveforms.h"
+#include "audio_callback.h"
+#include "audio_config.h"
+#include "metronome.h"
+#include "mixer.h"
+#include "my_log.h"
+#include "note.h"
+#include "sampler.h"
+#include "sequencer.h"
+#include "transport.h"
+#include "waveforms.h"
 
 using std::shared_ptr;
 using std::make_shared;

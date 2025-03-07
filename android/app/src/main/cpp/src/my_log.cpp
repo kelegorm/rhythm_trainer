@@ -1,7 +1,7 @@
 #include <android/log.h>
-#include <stdarg.h>
+#include <cstdarg>
 
-#define LOG_TAG "Native Sound PLayer"
+constexpr auto LOG_TAG = "Native Sound PLayer";
 
 void alog(const char *message, ...) {
     va_list args;
