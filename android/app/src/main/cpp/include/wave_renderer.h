@@ -16,7 +16,7 @@ public:
      * buffer.
      *
      * Buffer and source is a stereo interlaced arrays. Actual size of each is twice long. All
-     * sizes and lengths are set in frames (one frame is two floats for leanf a ringht channels).
+     * sizes and lengths are set in frames (one frame is two floats for left a right channels).
      *
      * It's better to pass actual buffer and source sizes, so func will check carefully out of
      * boundaries issues.
@@ -65,4 +65,12 @@ public:
             float* buffer, size_t bufferSize,
             const std::vector<float>& table, int tableOffset
     );
+private:
+    struct CopyParams {
+        size_t srcStart = 0;
+        size_t bufferStart = 0;
+        size_t copyLength = 0;
+    };
+
+    static CopyParams calcCopyParams(size_t bufferSize, size_t srcSize, int srcOffset);
 };

@@ -70,9 +70,17 @@ void Sampler::getSamples(float* buffer, int numFrames) {
         return;
     }
 
+    // copy audio to buffer
     WaveRenderer::copy(
         buffer, numFrames,
         _wave->data.data(), _wave->numFrames, _noteStart
+    );
+
+    // apply fade out
+    int fadeOutOffset = fadeOutStartWaveFrame + _noteStart;
+    WaveRenderer::multiply_table(
+        buffer, numFrames,
+        fadeOutTable, fadeOutOffset
     );
 
     _noteStart -= numFrames;
