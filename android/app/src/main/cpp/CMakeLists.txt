@@ -7,17 +7,19 @@ cmake_minimum_required(VERSION 3.22)
 
 project(RhythmTrainer LANGUAGES CXX) # если используешь C++, укажи CXX вместо C
 
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
 # Добавляем ваш файл с кодом
 add_library(sound_player SHARED
-        ../../native_andr/audio_callback.cpp
-        ../../native_andr/metronome.cpp
-        ../../native_andr/mixer.cpp
-        ../../native_andr/my_log.cpp
-        ../../native_andr/sampler.cpp
-        ../../native_andr/sequencer.cpp
-        ../../native_andr/sound_player.cpp
-        ../../native_andr/wave_renderer.cpp
-        ../../native_andr/waveforms.cpp
+        src/audio_callback.cpp
+        src/metronome.cpp
+        src/mixer.cpp
+        src/my_log.cpp
+        src/sampler.cpp
+        src/sequencer.cpp
+        src/sound_player.cpp
+        src/waveforms.cpp
+        src/wave_renderer.cpp
 )
 
 find_library(log-lib log)

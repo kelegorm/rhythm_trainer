@@ -1,5 +1,5 @@
-#include "mixer.h"
-#include "my_log.h"
+#include "../include/mixer.h"
+#include "../include/my_log.h"
 #include <cstring>
 #include <memory>
 

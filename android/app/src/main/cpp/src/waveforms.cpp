@@ -1,4 +1,4 @@
-#include "waveforms.h"
+#include "../include/waveforms.h"
 
 using std::vector;
 

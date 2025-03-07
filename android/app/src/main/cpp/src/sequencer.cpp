@@ -1,7 +1,7 @@
-#include "mixer.h"
-#include "my_log.h"
-#include "sampler.h"
-#include "sequencer.h"
+#include "../include/mixer.h"
+#include "../include/my_log.h"
+#include "../include/sampler.h"
+#include "../include/sequencer.h"
 #include <algorithm>
 #include <cmath>
 #include <cstring>

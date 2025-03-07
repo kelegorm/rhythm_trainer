@@ -1,6 +1,6 @@
-#include "audio_config.h"
-#include "metronome.h"
-#include "my_log.h"
+#include "../include/audio_config.h"
+#include "../include/metronome.h"
+#include "../include/my_log.h"
 #include <cmath>
 #include <cstring>
 

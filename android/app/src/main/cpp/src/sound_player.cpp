@@ -1,16 +1,16 @@
 #include <chrono>  // Для работы с временем
 #include <cstdint> // Для int64_t
 #include <oboe/Oboe.h>
-#include "audio_callback.h"
-#include "audio_config.h"
-#include "metronome.h"
-#include "mixer.h"
-#include "my_log.h"
-#include "note.h"
-#include "sampler.h"
-#include "sequencer.h"
-#include "transport.h"
-#include "waveforms.h"
+#include "../include/audio_callback.h"
+#include "../include/audio_config.h"
+#include "../include/metronome.h"
+#include "../include/mixer.h"
+#include "../include/my_log.h"
+#include "../include/note.h"
+#include "../include/sampler.h"
+#include "../include/sequencer.h"
+#include "../include/transport.h"
+#include "../include/waveforms.h"
 
 using std::shared_ptr;
 using std::make_shared;
@@ -50,10 +50,10 @@ extern "C" {
         );
 
         transport = make_shared<Transport>(120);
-        auto metronomeSound1 = make_shared<Wave>(getSineWave(256, 800.0f));
-        auto metronomeSound2 = make_shared<Wave>(getSineWave(256, 1600.0f));
+        auto metronomeSound1 = make_shared<Wave>(getSineWave(10612, 800.0f));
+        auto metronomeSound2 = make_shared<Wave>(getSineWave(10612, 1600.0f));
         metronome = make_shared<Metronome>(transport, metronomeSound1, metronomeSound2);
-//        metronome->run();
+        metronome->run();
 
         vector<Note> notes;
         notes.push_back(Note{0, 0.001});  // сильный удар на 1-ю долю
@@ -113,6 +113,26 @@ extern "C" {
         }
         globalCallback.reset();
         alog("Audio stream cleaned up!");
+    }
+
+    int setDrumSamples(
+        const float* leftData, int leftLength,
+        const float* rightData, int rightLength
+    ) {
+        alog("setDrumSamples called: leftLength = %d, rightLength = %d", leftLength, rightLength);
+        // Для теста можно добавить проверку на nullptr
+        if (leftData == nullptr || rightData == nullptr) {
+            alog("Error: one of the sample pointers is null.");
+            return 1;
+        }
+
+        if (leftLength == 0 || rightLength == 0) {
+            alog("Length of one of samples is 0");
+            return 2;
+        }
+
+        return 0;
+        // Здесь можно добавить дополнительную обработку или сохранение данных.
     }
 
     void playLeft() {
