@@ -53,7 +53,7 @@ extern "C" {
         auto metronomeSound1 = make_shared<Wave>(getSineWave(10612, 800.0f));
         auto metronomeSound2 = make_shared<Wave>(getSineWave(10612, 1600.0f));
         metronome = make_shared<Metronome>(transport, metronomeSound1, metronomeSound2);
-        metronome->run();
+//        metronome->run();
 
         vector<Note> notes;
         notes.push_back(Note{0, 0.001});  // сильный удар на 1-ю долю
@@ -115,6 +115,8 @@ extern "C" {
         alog("Audio stream cleaned up!");
     }
 
+    /// leftData and rightData should be pointers to interlaced audio.
+    /// leftLength and rightLength should be in frames.
     int setDrumSamples(
         const float* leftData, int leftLength,
         const float* rightData, int rightLength
@@ -130,6 +132,15 @@ extern "C" {
             alog("Length of one of samples is 0");
             return 2;
         }
+
+        std::vector<float> leftVector(leftData, leftData + leftLength * 2);
+        std::vector<float> rightVector(rightData, rightData + rightLength * 2);
+
+        auto leftSound = Wave{leftVector};
+        auto rightSound = Wave{rightVector};
+
+        leftSampler->setWave(make_shared<Wave>(leftSound));
+        rightSampler->setWave(make_shared<Wave>(rightSound));
 
         return 0;
         // Здесь можно добавить дополнительную обработку или сохранение данных.
