@@ -3,18 +3,21 @@ cmake_minimum_required(VERSION 3.22)
 
 #set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=*-cppcoreguidelines-*)
 
+#set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=-*,bugprone-signed-unsigned-comparison")
+
 project(RhythmTrainer LANGUAGES CXX) # если используешь C++, укажи CXX вместо C
 
 # Добавляем ваш файл с кодом
 add_library(sound_player SHARED
-        ../../native_andr/sound_player.cpp
-        ../../native_andr/my_log.cpp
-        ../../native_andr/waveforms.cpp
         ../../native_andr/audio_callback.cpp
-        ../../native_andr/mixer.cpp
-        ../../native_andr/sampler.cpp
         ../../native_andr/metronome.cpp
+        ../../native_andr/mixer.cpp
+        ../../native_andr/my_log.cpp
+        ../../native_andr/sampler.cpp
         ../../native_andr/sequencer.cpp
+        ../../native_andr/sound_player.cpp
+        ../../native_andr/wave_renderer.cpp
+        ../../native_andr/waveforms.cpp
 )
 
 find_library(log-lib log)
@@ -29,4 +32,4 @@ set_target_properties(sound_player PROPERTIES
         CXX_STANDARD_REQUIRED ON
 )
 
-#target_include_directories(sound_player PRIVATE ../../native_code)
+target_include_directories(sound_player PRIVATE ../../native_code)

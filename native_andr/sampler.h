@@ -21,11 +21,13 @@ public:
 private:
     std::shared_ptr<const Wave> _wave;
 
-    /// Current playback index (in frames)
-    int _currentIndex;
-
-    /// Offset (in frames) for playback start
-    int _startOffset;
+    /// Current Wave position relatively to current buffer, in frames.
+    ///
+    /// Positive value means wave will start play in some future.
+    /// Negative value means wave started to play some time ago.
+    ///
+    /// Each buffer tick we decrement _noteStart by buffer size.
+    int _noteStart;
 
     /// Frame when fade out will apply  to the wave t prevent click.
     int fadeOutStartWaveFrame = 0;
