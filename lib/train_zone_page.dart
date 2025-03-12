@@ -25,7 +25,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
   }
 
   Future<void> _initSounds() async {
-    initializeAudio((result) {
+    initializeAudio((result) async {
       if (result == 0) {
         print('Flutter: Audio Inited');
       } else {
@@ -33,7 +33,9 @@ class _TrainZonePageState extends State<TrainZonePage> {
       }
 
       //todo mark audio is loaded and update state
-      _setDrumSamples();
+      await _setDrumSamples();
+
+      _setSequence();
     });
   }
 
@@ -44,6 +46,18 @@ class _TrainZonePageState extends State<TrainZonePage> {
     setDrumSamplesAsync(leftWavContent, rightWavContent, (int result) {
       print('Drum samples set with result: $result');
     });
+  }
+
+  void _setSequence() {
+    final simpleNotes = <NoteData>[
+      NoteData(0, 0.0),
+      NoteData(1, 1.0),
+      NoteData(0, 2.0),
+      NoteData(0, 2.5),
+      NoteData(1, 3.0),
+    ];
+
+    setDrumSequence(simpleNotes, 4.0);
   }
 
   Future<Float32List> _loadWave(String assetName) async {

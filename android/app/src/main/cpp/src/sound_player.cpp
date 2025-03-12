@@ -29,7 +29,19 @@ shared_ptr<Sampler> leftSampler;
 shared_ptr<Sampler> rightSampler;
 shared_ptr<Transport> transport;
 shared_ptr<Metronome> metronome;
+shared_ptr<Sequencer> rhythmPlayer;
 shared_ptr<AudioCallback> globalCallback;
+
+struct NoteFFI {
+    int noteId;
+    double startBeat;
+};
+
+struct SequenceFFI {
+    const NoteFFI* notes;
+    int noteCount;
+    double sequenceLength;
+};
 
 extern "C" {
     void initializeAudio(InitCallback callback) {
@@ -50,22 +62,22 @@ extern "C" {
         );
 
         transport = make_shared<Transport>(120);
-        auto metronomeSound1 = make_shared<Wave>(getSineWave(10612, 800.0f));
-        auto metronomeSound2 = make_shared<Wave>(getSineWave(10612, 1600.0f));
+        auto metronomeSound1 = make_shared<Wave>(getSineWave(2612, 800.0f));
+        auto metronomeSound2 = make_shared<Wave>(getSineWave(2612, 1600.0f));
         metronome = make_shared<Metronome>(transport, metronomeSound1, metronomeSound2);
-//        metronome->run();
+        metronome->run();
 
         vector<Note> notes;
         notes.push_back(Note{0, 0.001});  // сильный удар на 1-ю долю
         notes.push_back(Note{1, 1.0});  // слабый удар на 2-ю долю
-        notes.push_back(Note{1, 2.0});  // слабый удар на 3-ю долю
+        notes.push_back(Note{0, 2.0});  // слабый удар на 3-ю долю
         notes.push_back(Note{1, 3.0});  // слабый удар на 4-ю долю
 
         vector<shared_ptr<const Wave>> soundBank;
-        soundBank.push_back(make_shared<Wave>(getSineWave(256, 1600.0f))); // strong strike
-        soundBank.push_back(make_shared<Wave>(getSineWave(256, 800.0f))); // weak
+        soundBank.push_back(make_shared<Wave>(getSineWave(1256, 1600.0f))); // strong strike
+        soundBank.push_back(make_shared<Wave>(getSineWave(1256, 800.0f))); // weak
 
-        shared_ptr<Sequencer> rhythmPlayer = make_shared<Sequencer>(transport, notes, soundBank, 4.0);
+        rhythmPlayer = make_shared<Sequencer>(transport, notes, soundBank, 4.0);
 
         // Регистрируем семплеры в микшере
         globalMixer->addSource(leftSampler);
@@ -133,8 +145,8 @@ extern "C" {
             return 2;
         }
 
-        std::vector<float> leftVector(leftData, leftData + leftLength * 2);
-        std::vector<float> rightVector(rightData, rightData + rightLength * 2);
+        vector<float> leftVector(leftData, leftData + leftLength * 2);
+        vector<float> rightVector(rightData, rightData + rightLength * 2);
 
         auto leftSound = Wave{leftVector};
         auto rightSound = Wave{rightVector};
@@ -142,8 +154,38 @@ extern "C" {
         leftSampler->setWave(make_shared<Wave>(leftSound));
         rightSampler->setWave(make_shared<Wave>(rightSound));
 
+
+//        rhythmPlayer->setSounds();
+
         return 0;
         // Здесь можно добавить дополнительную обработку или сохранение данных.
+    }
+
+    int setDrumSequence(const SequenceFFI* seq) {
+        if (!seq || seq == nullptr) {
+            alog("Pointer to a sequence is invalid");
+            return -1; // means data transfer failed.
+        }
+
+        if (seq->noteCount < 0 || seq->sequenceLength < 0.0) {
+            return 1; // means data is not valid.
+        }
+
+        vector<Note> notes;
+        for (int i = 0; i < seq->noteCount; ++i) {
+            auto ffiNote = seq->notes + i;
+            if (ffiNote && ffiNote != nullptr && ffiNote->noteId >=0 && ffiNote->startBeat >= 0.0) {
+                notes.push_back(Note{
+                    static_cast<size_t>(ffiNote->noteId),
+                    ffiNote->startBeat
+                });
+            }
+        }
+
+        rhythmPlayer->setSequence(notes, seq->sequenceLength);
+        rhythmPlayer->setEnabled(true);
+
+        return 0;
     }
 
     void playLeft() {

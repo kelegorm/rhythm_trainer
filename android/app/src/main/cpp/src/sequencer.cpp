@@ -21,17 +21,7 @@ Sequencer::Sequencer(
 )
     : transport(transport), loopLengthBeats(loopLengthBeats), isEnabled(false)
 {
-    double fpb = transport->framesPerBeat();
-    loopLengthFrames = loopLengthBeats * fpb;
-
-    for (const auto& note : notes) {
-        events.push_back(NoteEvent{note.soundId, note.startBeat * fpb});
-    }
-    
-    // Сортируем события по времени
-    sort(events.begin(), events.end(), [](const NoteEvent& a, const NoteEvent& b) {
-        return a.startFrame < b.startFrame;
-    });
+    setSequence(notes, loopLengthBeats);
 
     samplers.reserve(soundBank.size());
     for (const auto & wave : soundBank) {
@@ -63,6 +53,22 @@ void Sequencer::getSamples(float* buffer, int numFrames) {
     }
 
     internalMixer.mix(buffer, numFrames);
+}
+
+void Sequencer::setSequence(const vector<Note>& notes, double length) {
+    loopLengthBeats = length;
+
+    double fpb = transport->framesPerBeat();
+    loopLengthFrames = length * fpb;
+
+    for (const auto& note : notes) {
+        events.push_back(NoteEvent{note.soundId, note.startBeat * fpb});
+    }
+
+    // Сортируем события по времени
+    sort(events.begin(), events.end(), [](const NoteEvent& a, const NoteEvent& b) {
+        return a.startFrame < b.startFrame;
+    });
 }
 
 vector<Sequencer::NoteEvent> Sequencer::getShiftedEvents(const vector<NoteEvent>& events, double loopLengthFrames, double loopStart) {

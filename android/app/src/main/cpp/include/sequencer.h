@@ -30,9 +30,11 @@ public:
 
     void setEnabled(bool enabled) { isEnabled = enabled; }
 
+    void setSequence(const std::vector<Note>& notes, double length);
+
 private:
     struct NoteEvent {
-        int soundId;
+        size_t soundId;
         double startFrame;
     };
 
