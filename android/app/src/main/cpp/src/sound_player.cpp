@@ -65,7 +65,7 @@ extern "C" {
         auto metronomeSound1 = make_shared<Wave>(getSineWave(2612, 800.0f));
         auto metronomeSound2 = make_shared<Wave>(getSineWave(2612, 1600.0f));
         metronome = make_shared<Metronome>(transport, metronomeSound1, metronomeSound2);
-        metronome->run();
+//        metronome->run();
 
         vector<Note> notes;
         notes.push_back(Note{0, 0.001});  // сильный удар на 1-ю долю
@@ -148,17 +148,19 @@ extern "C" {
         vector<float> leftVector(leftData, leftData + leftLength * 2);
         vector<float> rightVector(rightData, rightData + rightLength * 2);
 
-        auto leftSound = Wave{leftVector};
-        auto rightSound = Wave{rightVector};
+        auto leftSound = make_shared<Wave>(leftVector);
+        auto rightSound = make_shared<Wave>(rightVector);
 
-        leftSampler->setWave(make_shared<Wave>(leftSound));
-        rightSampler->setWave(make_shared<Wave>(rightSound));
+        leftSampler->setWave(leftSound);
+        rightSampler->setWave(rightSound);
 
-
-//        rhythmPlayer->setSounds();
+        vector<shared_ptr<const Wave>> newSoundBank;
+        newSoundBank.push_back(leftSound);
+        newSoundBank.push_back(rightSound);
+//
+        rhythmPlayer->setSounds(newSoundBank);
 
         return 0;
-        // Здесь можно добавить дополнительную обработку или сохранение данных.
     }
 
     int setDrumSequence(const SequenceFFI* seq) {

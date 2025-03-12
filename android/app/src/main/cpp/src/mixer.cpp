@@ -44,3 +44,7 @@ void Mixer::mix(float* output, int numFrames) {
         }
     }
 }
+
+void Mixer::clear() {
+    sources.clear();
+}

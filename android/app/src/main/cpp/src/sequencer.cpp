@@ -23,12 +23,7 @@ Sequencer::Sequencer(
 {
     setSequence(notes, loopLengthBeats);
 
-    samplers.reserve(soundBank.size());
-    for (const auto & wave : soundBank) {
-        auto sampler = make_shared<Sampler>(wave);
-        samplers.push_back(sampler);
-        internalMixer.addSource(sampler);
-    }
+    setSounds(soundBank);
 }
 
 Sequencer::~Sequencer() {
@@ -69,6 +64,19 @@ void Sequencer::setSequence(const vector<Note>& notes, double length) {
     sort(events.begin(), events.end(), [](const NoteEvent& a, const NoteEvent& b) {
         return a.startFrame < b.startFrame;
     });
+}
+
+void Sequencer::setSounds(const vector<shared_ptr<const Wave>>& newSoundBank) {
+    samplers.clear();
+    internalMixer.clear();
+
+    samplers.reserve(newSoundBank.size());
+
+    for (const auto & wave : newSoundBank) {
+        auto sampler = make_shared<Sampler>(wave);
+        samplers.push_back(sampler);
+        internalMixer.addSource(sampler);
+    }
 }
 
 vector<Sequencer::NoteEvent> Sequencer::getShiftedEvents(const vector<NoteEvent>& events, double loopLengthFrames, double loopStart) {

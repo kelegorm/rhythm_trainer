@@ -30,6 +30,8 @@ public:
 
     void setEnabled(bool enabled) { isEnabled = enabled; }
 
+    void setSounds(const std::vector<std::shared_ptr<const Wave>>& newSoundBank);
+
     void setSequence(const std::vector<Note>& notes, double length);
 
 private:
