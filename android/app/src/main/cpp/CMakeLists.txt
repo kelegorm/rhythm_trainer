@@ -14,6 +14,8 @@ cmake_minimum_required(VERSION 3.22)
 #        -warnings-as-errors=*;
 #)
 
+#set(CMAKE_CXX_CLANG_TIDY ${ANDROID_TOOLCHAIN_ROOT}/bin/clang-tidy -checks=*)
+
 project(RhythmTrainer LANGUAGES CXX) # если используешь C++, укажи CXX вместо C
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
