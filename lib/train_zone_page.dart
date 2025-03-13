@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:rhythm_trainer/drum_pattern.dart';
+import 'package:rhythm_trainer/drum_pattern_widget.dart';
 import 'package:rhythm_trainer/native_wrapper.dart';
 import 'package:wav_io/wav_io.dart';
 
@@ -100,6 +102,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
+        _buildPattern(),
         _buildButtons(),
       ],
     );
@@ -154,6 +157,27 @@ class _TrainZonePageState extends State<TrainZonePage> {
       case DrumPadEnum.right:
         playRight();
     }
+  }
+
+  Widget _buildPattern() {
+    final pattern = DrumPattern(
+      <DrumNote>[
+        DrumNote(DrumPad.left, 0.0),
+        DrumNote(DrumPad.right, 1.0),
+        DrumNote(DrumPad.left, 2.0),
+        DrumNote(DrumPad.left, 2.5),
+        DrumNote(DrumPad.right, 3.0),
+      ],
+      1
+    );
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SizedBox(
+        height: 70,
+        width: double.infinity,
+        child: DrumPatternWidget(pattern: pattern),
+      ),
+    );
   }
 }
 
