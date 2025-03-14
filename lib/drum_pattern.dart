@@ -7,6 +7,7 @@ class DrumPattern {
 
 class DrumNote {
   final DrumPad pad;
+  /// note start time in beats.
   final double startTime;
 
   DrumNote(this.pad, this.startTime);
