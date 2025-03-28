@@ -1,5 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
-import 'package:rhythm_trainer/audio_thing.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:rhythm_trainer/drum_pattern.dart';
+import 'package:rhythm_trainer/drum_pattern_widget.dart';
+import 'package:rhythm_trainer/native_wrapper.dart';
+import 'package:wav_io/wav_io.dart';
 
 
 class TrainZonePage extends StatefulWidget {
@@ -12,6 +18,7 @@ class TrainZonePage extends StatefulWidget {
 }
 
 class _TrainZonePageState extends State<TrainZonePage> {
+
   @override
   void initState() {
     super.initState();
@@ -20,7 +27,69 @@ class _TrainZonePageState extends State<TrainZonePage> {
   }
 
   Future<void> _initSounds() async {
-    //todo mark audio is loaded and update state
+    initializeAudio((result) async {
+      if (result == 0) {
+        print('Flutter: Audio Inited');
+      } else {
+        print("Failed to init audio. Error code: $result");
+      }
+
+      //todo mark audio is loaded and update state
+      await _setDrumSamples();
+
+      _setSequence();
+    });
+  }
+
+  Future<void> _setDrumSamples() async {
+    final leftWavContent = await _loadWave('assets/sounds/Block 1 Ekko Smash V6 48.wav');
+    final rightWavContent = await _loadWave('assets/sounds/Clave Ekko Smash V6 48.wav');
+
+    setDrumSamplesAsync(leftWavContent, rightWavContent, (int result) {
+      print('Drum samples set with result: $result');
+    });
+  }
+
+  void _setSequence() {
+    final simpleNotes = <NoteData>[
+      NoteData(0, 0.0),
+      NoteData(1, 1.0),
+      NoteData(0, 2.0),
+      NoteData(0, 2.5),
+      NoteData(1, 3.0),
+    ];
+
+    setDrumSequence(simpleNotes, 4.0);
+  }
+
+  Future<Float32List> _loadWave(String assetName) async {
+    ByteData data = await rootBundle.load(assetName);
+    var result = loadWav(data);
+    if (result.isError) {
+      throw Exception("Can't load file");
+    }
+
+    IWavContent wav = result.unwrap();
+
+    if (wav.isMono) {
+      wav = wav.monoToStereo();
+    }
+    if (!wav.isStereo) throw Exception('Wav should be mono or stereo');
+
+    if (wav.sampleRate != 48000) throw Exception("Unsupported wav sampleRate: ${wav.sampleRate}. Should be 48kHz");
+
+    final leftChannel = wav.toFloat32().samplesStorage.samplesData[0];
+    final rightChannel = wav.toFloat32().samplesStorage.samplesData[1];
+
+    final interleaved = Float32List(leftChannel.length + rightChannel.length);
+    for (int i = 0; i < leftChannel.length; i++) {
+      interleaved[i * 2] = leftChannel[i];
+      interleaved[i * 2 + 1] = rightChannel[i];
+    }
+
+    // return Float32List.view(data.buffer);
+
+    return interleaved;
   }
 
   @override
@@ -33,6 +102,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
+        _buildPattern(),
         _buildButtons(),
       ],
     );
@@ -82,11 +152,32 @@ class _TrainZonePageState extends State<TrainZonePage> {
   void _soundDrumPad(DrumPadEnum padId) async {
     switch (padId) {
       case DrumPadEnum.left:
-        await playSound();
+        playLeft();
 
       case DrumPadEnum.right:
-        await playSound();
+        playRight();
     }
+  }
+
+  Widget _buildPattern() {
+    final pattern = DrumPattern(
+      <DrumNote>[
+        DrumNote(DrumPad.left, 0.0),
+        DrumNote(DrumPad.right, 1.0),
+        DrumNote(DrumPad.left, 2.0),
+        DrumNote(DrumPad.left, 2.5),
+        DrumNote(DrumPad.right, 3.0),
+      ],
+      1
+    );
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SizedBox(
+        height: 70,
+        width: double.infinity,
+        child: DrumPatternWidget(pattern: pattern),
+      ),
+    );
   }
 }
 
