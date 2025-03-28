@@ -1,12 +1,9 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:rhythm_trainer/drum_pattern.dart';
 import 'package:rhythm_trainer/drum_pattern_widget.dart';
 import 'package:rhythm_trainer/native_wrapper.dart';
+import 'package:rhythm_trainer/samples_library.dart';
 import 'package:rhythm_trainer/train_zone_bl.dart';
-import 'package:wav_io/wav_io.dart';
 
 
 class TrainZonePage extends StatefulWidget {
@@ -45,8 +42,8 @@ class _TrainZonePageState extends State<TrainZonePage> {
   }
 
   Future<void> _setDrumSamples() async {
-    final leftWavContent = await _loadWave('assets/sounds/Block 1 Ekko Smash V6 48.wav');
-    final rightWavContent = await _loadWave('assets/sounds/Clave Ekko Smash V6 48.wav');
+    final leftWavContent = await loadWave(DrumSound.block48);
+    final rightWavContent = await loadWave(DrumSound.clave48);
 
     setDrumSamplesAsync(leftWavContent, rightWavContent, (int result) {
       print('Drum samples set with result: $result');
@@ -63,34 +60,6 @@ class _TrainZonePageState extends State<TrainZonePage> {
     ];
 
     setDrumSequence(simpleNotes, 4.0);
-  }
-
-  Future<Float32List> _loadWave(String assetName) async {
-    ByteData data = await rootBundle.load(assetName);
-    var result = loadWav(data);
-    if (result.isError) {
-      throw Exception("Can't load file");
-    }
-
-    IWavContent wav = result.unwrap();
-
-    if (wav.isMono) {
-      wav = wav.monoToStereo();
-    }
-    if (!wav.isStereo) throw Exception('Wav should be mono or stereo');
-
-    if (wav.sampleRate != 48000) throw Exception("Unsupported wav sampleRate: ${wav.sampleRate}. Should be 48kHz");
-
-    final leftChannel = wav.toFloat32().samplesStorage.samplesData[0];
-    final rightChannel = wav.toFloat32().samplesStorage.samplesData[1];
-
-    final interleaved = Float32List(leftChannel.length + rightChannel.length);
-    for (int i = 0; i < leftChannel.length; i++) {
-      interleaved[i * 2] = leftChannel[i];
-      interleaved[i * 2 + 1] = rightChannel[i];
-    }
-
-    return interleaved;
   }
 
   @override
