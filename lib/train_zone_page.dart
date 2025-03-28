@@ -5,13 +5,16 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:rhythm_trainer/drum_pattern.dart';
 import 'package:rhythm_trainer/drum_pattern_widget.dart';
 import 'package:rhythm_trainer/native_wrapper.dart';
+import 'package:rhythm_trainer/train_zone_bl.dart';
 import 'package:wav_io/wav_io.dart';
 
 
 class TrainZonePage extends StatefulWidget {
-  const TrainZonePage({super.key, required this.title});
+  const TrainZonePage({required this.title, required this.pattern, super.key, });
 
   final String title;
+
+  final DrumPattern pattern;
 
   @override
   State<TrainZonePage> createState() => _TrainZonePageState();
@@ -87,8 +90,6 @@ class _TrainZonePageState extends State<TrainZonePage> {
       interleaved[i * 2 + 1] = rightChannel[i];
     }
 
-    // return Float32List.view(data.buffer);
-
     return interleaved;
   }
 
@@ -102,7 +103,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        _buildPattern(),
+        _buildPattern(widget.pattern),
         _buildButtons(),
       ],
     );
@@ -159,17 +160,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
     }
   }
 
-  Widget _buildPattern() {
-    final pattern = DrumPattern(
-      <DrumNote>[
-        DrumNote(DrumPad.left, 0.0),
-        DrumNote(DrumPad.right, 1.0),
-        DrumNote(DrumPad.left, 2.0),
-        DrumNote(DrumPad.left, 2.5),
-        DrumNote(DrumPad.right, 3.0),
-      ],
-      1
-    );
+  Widget _buildPattern(DrumPattern pattern) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
