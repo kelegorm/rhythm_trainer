@@ -14,6 +14,10 @@ class DrumNote {
 }
 
 enum DrumPad {
-  left,
-  right
+  left(id: 0),
+  right(id: 1);
+
+  const DrumPad({required this.id});
+
+  final int id;
 }

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rhythm_trainer/drum_pattern.dart';
 import 'package:rhythm_trainer/drum_pattern_widget.dart';
-import 'package:rhythm_trainer/native_wrapper.dart';
-import 'package:rhythm_trainer/samples_library.dart';
 import 'package:rhythm_trainer/train_zone_bl.dart';
 
 
@@ -10,7 +8,6 @@ class TrainZonePage extends StatefulWidget {
   const TrainZonePage({required this.title, required this.pattern, super.key, });
 
   final String title;
-
   final DrumPattern pattern;
 
   @override
@@ -18,54 +15,44 @@ class TrainZonePage extends StatefulWidget {
 }
 
 class _TrainZonePageState extends State<TrainZonePage> {
+  late TrainingPageBL bl;
 
   @override
   void initState() {
     super.initState();
 
-    _initSounds();
+    bl = TrainingPageBL(pattern: widget.pattern);
+    bl.prepareScene();
   }
 
-  Future<void> _initSounds() async {
-    initializeAudio((result) async {
-      if (result == 0) {
-        print('Flutter: Audio Inited');
-      } else {
-        print("Failed to init audio. Error code: $result");
-      }
+  @override
+  void didUpdateWidget(TrainZonePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
-      //todo mark audio is loaded and update state
-      await _setDrumSamples();
-
-      _setSequence();
-    });
-  }
-
-  Future<void> _setDrumSamples() async {
-    final leftWavContent = await loadWave(DrumSound.block48);
-    final rightWavContent = await loadWave(DrumSound.clave48);
-
-    setDrumSamplesAsync(leftWavContent, rightWavContent, (int result) {
-      print('Drum samples set with result: $result');
-    });
-  }
-
-  void _setSequence() {
-    final simpleNotes = <NoteData>[
-      NoteData(0, 0.0),
-      NoteData(1, 1.0),
-      NoteData(0, 2.0),
-      NoteData(0, 2.5),
-      NoteData(1, 3.0),
-    ];
-
-    setDrumSequence(simpleNotes, 4.0);
+    if (oldWidget.pattern != widget.pattern) {
+      // todo something
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    var body = _buildMainScreen();
-    return _buildScaffold(body);
+    return switch (bl.state) {
+      InitialTrainingState initial => _buildInitScreen(initial),
+      ReadyTrainingState ready => _buildReadyScreen(ready),
+      PlayingTrainingState playing => _buildPlayingScreen(playing),
+    };
+  }
+
+  Widget _buildInitScreen(InitialTrainingState state) {
+    return _buildScaffold(_buildMainScreen());
+  }
+
+  Widget _buildReadyScreen(ReadyTrainingState ready) {
+    return _buildScaffold(_buildMainScreen());
+  }
+
+  Widget _buildPlayingScreen(PlayingTrainingState playing) {
+    return _buildScaffold(_buildMainScreen());
   }
 
   Widget _buildMainScreen() {
@@ -122,10 +109,10 @@ class _TrainZonePageState extends State<TrainZonePage> {
   void _soundDrumPad(DrumPadEnum padId) async {
     switch (padId) {
       case DrumPadEnum.left:
-        playLeft();
+        bl.playLeft();
 
       case DrumPadEnum.right:
-        playRight();
+        bl.playRight();
     }
   }
 
@@ -148,4 +135,3 @@ String _getPadLabel(DrumPadEnum padId) {
   };
 }
 
-enum DrumPadEnum { left, right }
