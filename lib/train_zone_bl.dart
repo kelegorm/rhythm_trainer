@@ -10,19 +10,50 @@ class TrainingPageBL {
   final DrumPattern pattern;
 
   TrainingState get state => _state;
+  Stream<TrainingState> get states => _stateCtrl.stream;
   TrainingState _state = InitialTrainingState();
+  final StreamController<TrainingState> _stateCtrl = StreamController<TrainingState>();
 
   TrainingPageBL({required this.pattern});
 
   void prepareScene() async {
-    await _initSounds();
+    await _initEngine();
     //todo mark audio is loaded and update state
     await _setDrumSamples();
 
     _setSequence();
+
+    await _setSceneSettings();
+
+    _setState(ReadyTrainingState());
   }
 
-  Future<void> _initSounds() async {
+  void startTraining() {
+    _setState(PlayingTrainingState());
+    // aud.
+  }
+
+  Future<void> _setSceneSettings() async {
+    //TODO set metronome preroll
+  }
+
+  void startDemo() {
+    _setState(PlayingDemoState());
+  }
+
+  void stop() {
+    _setState(ReadyTrainingState());
+  }
+
+  void trigLeftPad() {
+    aud.playLeft();
+  }
+
+  void trigRightPad() {
+    aud.playRight();
+  }
+
+  Future<void> _initEngine() async {
     final completer = Completer<void>();
 
     aud.initializeAudio((result) async {
@@ -58,12 +89,9 @@ class TrainingPageBL {
     aud.setDrumSequence(simpleNotes, 4.0);
   }
 
-  void playLeft() {
-    aud.playLeft();
-  }
-
-  void playRight() {
-    aud.playRight();
+  void _setState(TrainingState newState) {
+    _state = newState;
+    _stateCtrl.add(newState);
   }
 }
 
@@ -77,3 +105,5 @@ class ReadyTrainingState extends TrainingState {}
 
 /// PLaying means metronome is run, training is going.
 class PlayingTrainingState extends TrainingState {}
+
+class PlayingDemoState extends TrainingState {}

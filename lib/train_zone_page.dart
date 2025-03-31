@@ -36,33 +36,59 @@ class _TrainZonePageState extends State<TrainZonePage> {
 
   @override
   Widget build(BuildContext context) {
-    return switch (bl.state) {
-      InitialTrainingState initial => _buildInitScreen(initial),
-      ReadyTrainingState ready => _buildReadyScreen(ready),
-      PlayingTrainingState playing => _buildPlayingScreen(playing),
-    };
+    return StreamBuilder<TrainingState>(
+      stream: bl.states,
+      initialData: bl.state,
+      builder: (BuildContext context, AsyncSnapshot<TrainingState> snapshot) {
+        return switch (snapshot.data) {
+          InitialTrainingState initial => _buildInitScreen(initial),
+          ReadyTrainingState ready => _buildReadyScreen(ready),
+          PlayingTrainingState playing => _buildPlayingScreen(playing),
+          PlayingDemoState demo => _buildDemoScreen(demo),
+          null => throw UnimplementedError(),
+        };
+      },
+    );
   }
 
   Widget _buildInitScreen(InitialTrainingState state) {
-    return _buildScaffold(_buildMainScreen());
+    return _buildScaffold(const Center(
+      child: Text('Initializing'),
+    ));
   }
 
   Widget _buildReadyScreen(ReadyTrainingState ready) {
-    return _buildScaffold(_buildMainScreen());
+    final buttons = <Widget>[
+      FilledButton(
+        child: Text('Start'),
+        onPressed: () => _onBtnStart(),
+      ),
+      FilledButton(
+        child: Text('Demo'),
+        onPressed: () => _onBtnDemo(),
+      ),
+    ];
+    return _buildScaffold(_buildMainScreen(buttons));
   }
 
   Widget _buildPlayingScreen(PlayingTrainingState playing) {
-    return _buildScaffold(_buildMainScreen());
+    final buttons = <Widget>[
+      FilledButton(
+        child: Text('Stop'),
+        onPressed: () => _onBtnTrainingStop(),
+      ),
+    ];
+    return _buildScaffold(_buildMainScreen(buttons));
   }
 
-  Widget _buildMainScreen() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        _buildPattern(widget.pattern),
-        _buildButtons(),
-      ],
-    );
+  Widget _buildDemoScreen(PlayingDemoState demoState) {
+    final buttons = <Widget>[
+      FilledButton(
+        child: Text('Stop'),
+        onPressed: () => _onBtnDemoStop(),
+      ),
+    ];
+    return _buildScaffold(_buildMainScreen(buttons));
   }
 
   Widget _buildScaffold(Widget body) {
@@ -75,7 +101,20 @@ class _TrainZonePageState extends State<TrainZonePage> {
     );
   }
 
-  Widget _buildButtons() {
+  Widget _buildMainScreen(List<Widget> buttons) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        _buildPattern(widget.pattern),
+        Row(
+          children: buttons,
+        ),
+        _buildDrumPads(),
+      ],
+    );
+  }
+
+  Widget _buildDrumPads() {
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Row(
@@ -109,10 +148,10 @@ class _TrainZonePageState extends State<TrainZonePage> {
   void _soundDrumPad(DrumPadEnum padId) async {
     switch (padId) {
       case DrumPadEnum.left:
-        bl.playLeft();
+        bl.trigLeftPad();
 
       case DrumPadEnum.right:
-        bl.playRight();
+        bl.trigRightPad();
     }
   }
 
@@ -125,6 +164,22 @@ class _TrainZonePageState extends State<TrainZonePage> {
         child: DrumPatternWidget(pattern: pattern),
       ),
     );
+  }
+
+  void _onBtnStart() {
+    bl.startTraining();
+  }
+
+  void _onBtnDemo() {
+    bl.startDemo();
+  }
+
+  void _onBtnDemoStop() {
+    bl.stop();
+  }
+
+  void _onBtnTrainingStop() {
+    bl.stop();
   }
 }
 
