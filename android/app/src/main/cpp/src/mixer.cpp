@@ -30,9 +30,10 @@ void Mixer::mix(float* output, int numFrames) {
 
         fill(tempBuffer.begin(), tempBuffer.end(), 0);
         src->getSamples(tempBuffer.data(), numFrames);
+        float vol = src->getVolume();
 
         for (int i = 0; i < numFrames * 2; ++i) {
-            output[i] += tempBuffer[i] * 0.3f;
+            output[i] += tempBuffer[i] * vol;
         }
     }
 

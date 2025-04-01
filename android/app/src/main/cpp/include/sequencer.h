@@ -26,6 +26,8 @@ public:
     );
     ~Sequencer() override;
 
+    float getVolume() override {return 1.0; }
+
     void getSamples(float* buffer, int numFrames) override;
 
     void setEnabled(bool enabled) { isEnabled = enabled; }

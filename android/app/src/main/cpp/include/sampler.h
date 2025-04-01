@@ -8,6 +8,8 @@ class Sampler : public AudioSource {
 public:
     explicit Sampler(const std::shared_ptr<const Wave>& wave = nullptr);
 
+    float getVolume() override {return 1.0; }
+
     void setWave(const std::shared_ptr<const Wave>& wave);
 
     void trigger(int offset = 0);
