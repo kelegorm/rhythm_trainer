@@ -20,15 +20,15 @@ Metronome::Metronome(
     sound2Sampler.setWave(sound2);
 }
 
-void Metronome::run() {
-    isEnabled = true;
-    sound1Sampler.trigger(0);
-}
-
-void Metronome::stop() {
-    isEnabled = false;
-    sound1Sampler.stop();
-    sound2Sampler.stop();
+void Metronome::setEnabled(bool newValue) {
+    if (newValue == true) {
+        isEnabled = true;
+//        sound1Sampler.trigger(0);
+    } else {
+        isEnabled = false;
+        sound1Sampler.stop();
+        sound2Sampler.stop();
+    }
 }
 
 void Metronome::getSamples(float *buffer, int numFrames) {

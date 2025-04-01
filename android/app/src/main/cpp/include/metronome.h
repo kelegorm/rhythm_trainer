@@ -14,9 +14,7 @@ public:
         const std::shared_ptr<const Wave>& sound2
     );
 
-    void run();
-
-    void stop();
+    void setEnabled(bool newValue);
 
     void getSamples(float* buffer, int numFrames) override;
 

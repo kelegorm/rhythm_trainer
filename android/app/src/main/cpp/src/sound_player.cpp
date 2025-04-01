@@ -207,11 +207,11 @@ extern "C" {
     }
 
     void runMetronome() {
-        metronome->run();
+        metronome->setEnabled(true);
     }
 
     void stopMetronome() {
-        metronome->stop();
+        metronome->setEnabled(false);
     }
 }
 
