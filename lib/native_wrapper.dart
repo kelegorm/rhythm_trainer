@@ -183,3 +183,57 @@ typedef _SetDrumSequenceDart = int Function(
 final _SetDrumSequenceDart _setDrumSequence = _soundPlayerLib
     .lookup<NativeFunction<_SetDrumSequenceNative>>("setDrumSequence")
     .asFunction();
+
+
+//--------------------------------------
+// Run Scene Function
+//--------------------------------------
+
+/// Calls the native runScene function.
+void runScene({
+  required bool metronomeEnabled,
+  required bool sequenceEnabled,
+  required double tempo,
+}) {
+  _runScene(metronomeEnabled ? 1 : 0, sequenceEnabled ? 1 : 0, tempo);
+}
+
+/// FFI: Calls native runScene function.
+///
+/// Parameters:
+/// - [metronomeEnabled]: enables/disables metronome sound.
+/// - [sequenceEnabled]: enables/disables sequence.
+/// - [tempo]: tempo as a float value.
+typedef _RunSceneNative = Void Function(
+    Int8 metronomeEnabled,
+    Int8 sequenceEnabled,
+    Double tempo
+  );
+
+typedef _RunSceneDart = void Function(
+    int metronomeEnabled,
+    int sequenceEnabled,
+    double tempo
+  );
+
+final _RunSceneDart _runScene = _soundPlayerLib
+    .lookup<NativeFunction<_RunSceneNative>>("runScene")
+    .asFunction();
+
+//--------------------------------------
+// Stop Scene Function
+//--------------------------------------
+
+/// Calls the native stopScene function.
+void stopScene() {
+  _stopScene();
+}
+
+/// FFI: Calls native stopScene function.
+typedef _StopSceneNative = Void Function();
+
+typedef _StopSceneDart = void Function();
+
+final _StopSceneDart _stopScene = _soundPlayerLib
+    .lookup<NativeFunction<_StopSceneNative>>("stopScene")
+    .asFunction();

@@ -9,6 +9,8 @@ enum DrumPadEnum { left, right }
 class TrainingPageBL {
   final DrumPattern pattern;
 
+  final double tempo = 80.0;
+
   TrainingState get state => _state;
   Stream<TrainingState> get states => _stateCtrl.stream;
   TrainingState _state = InitialTrainingState();
@@ -29,19 +31,18 @@ class TrainingPageBL {
   }
 
   void startTraining() {
+    aud.runScene(metronomeEnabled: true, sequenceEnabled: false, tempo: tempo);
     _setState(PlayingTrainingState());
     // aud.
   }
 
-  Future<void> _setSceneSettings() async {
-    //TODO set metronome preroll
-  }
-
   void startDemo() {
+    aud.runScene(metronomeEnabled: true, sequenceEnabled: true, tempo: tempo);
     _setState(PlayingDemoState());
   }
 
   void stop() {
+    aud.stopScene();
     _setState(ReadyTrainingState());
   }
 
@@ -87,6 +88,10 @@ class TrainingPageBL {
     ];
 
     aud.setDrumSequence(simpleNotes, 4.0);
+  }
+
+  Future<void> _setSceneSettings() async {
+    //TODO set metronome preroll
   }
 
   void _setState(TrainingState newState) {

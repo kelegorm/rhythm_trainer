@@ -206,12 +206,18 @@ extern "C" {
         rightSampler->trigger();
     }
 
-    void runMetronome() {
-        metronome->setEnabled(true);
+    void runScene(int8_t metronomeEnabled, int8_t sequenceEnabled, double temp) {
+        bool metronomeBool = (metronomeEnabled != 0);
+        bool sequenceBool = (sequenceEnabled != 0);
+
+        metronome->setEnabled(metronomeBool);
+        rhythmPlayer->setEnabled(sequenceBool);
+        transport->setBPM(static_cast<double>(temp));
+        transport->play();
     }
 
-    void stopMetronome() {
-        metronome->setEnabled(false);
+    void stopScene() {
+        transport->stop();
     }
 }
 
