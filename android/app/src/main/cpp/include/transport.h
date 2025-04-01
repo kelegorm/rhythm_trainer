@@ -5,7 +5,7 @@
 class Transport {
 public:
     Transport(double bpm)
-            : _isPlaying(true), _bpm(bpm), _currentSample(0)
+            : _isPlaying(false), _bpm(bpm), _currentSample(0)
     {}
 
     bool isPlaying() const { return _isPlaying; }

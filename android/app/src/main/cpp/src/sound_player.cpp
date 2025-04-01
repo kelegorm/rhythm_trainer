@@ -65,7 +65,6 @@ extern "C" {
         auto metronomeSound1 = make_shared<Wave>(getSineWave(2612, 800.0f));
         auto metronomeSound2 = make_shared<Wave>(getSineWave(2612, 1600.0f));
         metronome = make_shared<Metronome>(transport, metronomeSound1, metronomeSound2);
-//        metronome->run();
 
         vector<Note> notes;
         notes.push_back(Note{0, 0.001});  // сильный удар на 1-ю долю
@@ -157,7 +156,7 @@ extern "C" {
         vector<shared_ptr<const Wave>> newSoundBank;
         newSoundBank.push_back(leftSound);
         newSoundBank.push_back(rightSound);
-//
+
         rhythmPlayer->setSounds(newSoundBank);
 
         return 0;
@@ -185,7 +184,6 @@ extern "C" {
         }
 
         rhythmPlayer->setSequence(notes, seq->sequenceLength);
-        rhythmPlayer->setEnabled(true);
 
         return 0;
     }
