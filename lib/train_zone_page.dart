@@ -161,7 +161,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
       child: SizedBox(
         height: 70,
         width: double.infinity,
-        child: DrumPatternWidget(pattern: pattern),
+        child: DrumPatternWidget(pattern: pattern, events: bl.rhythmEvents, lastEvent: bl.lastRhythmEvent),
       ),
     );
   }

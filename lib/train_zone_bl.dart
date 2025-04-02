@@ -15,6 +15,7 @@ class TrainingPageBL {
   Stream<TrainingState> get states => _stateCtrl.stream;
 
   Stream<TrainingEngineEvent> get rhythmEvents => _rhythmEvents;
+  TrainingEngineEvent get  lastRhythmEvent => _engine.event;
 
 
   TrainingPageBL({required DrumPattern pattern}) : _pattern = pattern {
@@ -43,8 +44,6 @@ class TrainingPageBL {
   void startTraining() {
     aud.runScene(metronomeEnabled: true, sequenceEnabled: false, tempo: _tempo);
     _setState(PlayingTrainingState());
-
-    _trainingStartTime = DateTime.now();
     _engine.start();
   }
 
@@ -61,12 +60,12 @@ class TrainingPageBL {
 
   void trigLeftPad() {
     aud.playLeft();
-    _analyzeUserHit(DrumPad.left);
+    _engine.userHit(DrumPad.left);
   }
 
   void trigRightPad() {
     aud.playRight();
-    _analyzeUserHit(DrumPad.right);
+    _engine.userHit(DrumPad.right);
   }
 
   Future<void> _initEngine() async {
@@ -114,22 +113,11 @@ class TrainingPageBL {
     _stateCtrl.add(newState);
   }
 
-  // Новый метод для регистрации удара пользователя
-  void _analyzeUserHit(DrumPad pad) {
-    if (_trainingStartTime != null) {
-      final startTime = _trainingStartTime!;
-      final hitTimeSeconds = DateTime.now().difference(startTime).inMicroseconds / 1000000.0;
-
-      _engine.userHit(elapsedSeconds: hitTimeSeconds, pad: pad);
-    }
-  }
-
 
   final DrumPattern _pattern;
   final double _tempo = 80.0;
   final int _repeats = 4;
 
-  DateTime? _trainingStartTime;
   late final TrainingEngine _engine;
 
   TrainingState _state = InitialTrainingState();
