@@ -3,20 +3,30 @@ import 'dart:async';
 import 'package:rhythm_trainer/drum_pattern.dart';
 import 'package:rhythm_trainer/native_wrapper.dart' as aud;
 import 'package:rhythm_trainer/samples_library.dart';
+import 'package:rhythm_trainer/simple_training_engine.dart';
+import 'package:rhythm_trainer/training_engine.dart';
+import 'package:rhythm_trainer/training_engine_events.dart';
 
 enum DrumPadEnum { left, right }
 
 class TrainingPageBL {
-  final DrumPattern pattern;
-
-  final double tempo = 80.0;
-
   TrainingState get state => _state;
-  Stream<TrainingState> get states => _stateCtrl.stream;
-  TrainingState _state = InitialTrainingState();
-  final StreamController<TrainingState> _stateCtrl = StreamController<TrainingState>();
 
-  TrainingPageBL({required this.pattern});
+  Stream<TrainingState> get states => _stateCtrl.stream;
+
+  Stream<TrainingEngineEvent> get rhythmEvents => _rhythmEvents;
+
+
+  TrainingPageBL({required DrumPattern pattern}) : _pattern = pattern {
+    _engine = SimpleTrainingEngine(
+      pattern: _pattern,
+      tempo: _tempo,
+      repeats: _repeats,
+    );
+
+    _rhythmEvents = _engine.events.asBroadcastStream();
+  }
+
 
   void prepareScene() async {
     await _initEngine();
@@ -31,27 +41,32 @@ class TrainingPageBL {
   }
 
   void startTraining() {
-    aud.runScene(metronomeEnabled: true, sequenceEnabled: false, tempo: tempo);
+    aud.runScene(metronomeEnabled: true, sequenceEnabled: false, tempo: _tempo);
     _setState(PlayingTrainingState());
-    // aud.
+
+    _trainingStartTime = DateTime.now();
+    _engine.start();
   }
 
   void startDemo() {
-    aud.runScene(metronomeEnabled: true, sequenceEnabled: true, tempo: tempo);
+    aud.runScene(metronomeEnabled: true, sequenceEnabled: true, tempo: _tempo);
     _setState(PlayingDemoState());
   }
 
   void stop() {
     aud.stopScene();
     _setState(ReadyTrainingState());
+    _engine.stop();
   }
 
   void trigLeftPad() {
     aud.playLeft();
+    _analyzeUserHit(DrumPad.left);
   }
 
   void trigRightPad() {
     aud.playRight();
+    _analyzeUserHit(DrumPad.right);
   }
 
   Future<void> _initEngine() async {
@@ -98,6 +113,28 @@ class TrainingPageBL {
     _state = newState;
     _stateCtrl.add(newState);
   }
+
+  // Новый метод для регистрации удара пользователя
+  void _analyzeUserHit(DrumPad pad) {
+    if (_trainingStartTime != null) {
+      final startTime = _trainingStartTime!;
+      final hitTimeSeconds = DateTime.now().difference(startTime).inMicroseconds / 1000000.0;
+
+      _engine.userHit(elapsedSeconds: hitTimeSeconds, pad: pad);
+    }
+  }
+
+
+  final DrumPattern _pattern;
+  final double _tempo = 80.0;
+  final int _repeats = 4;
+
+  DateTime? _trainingStartTime;
+  late final TrainingEngine _engine;
+
+  TrainingState _state = InitialTrainingState();
+  final StreamController<TrainingState> _stateCtrl = StreamController<TrainingState>();
+  late final Stream<TrainingEngineEvent> _rhythmEvents;
 }
 
 sealed class TrainingState {}
