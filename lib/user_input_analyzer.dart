@@ -1,5 +1,12 @@
+import 'dart:math' show min;
+
+import 'package:meta/meta.dart';
 import 'package:rhythm_trainer/drum_pattern.dart';
 
+/// Matches user hits to reference rhythm notes and classifies each hit as
+/// matched or extra hits.
+///
+/// Does not handle missed notes or time progression. Call [clear] to reuse.
 class UserInputAnalyzer {
   final DrumPattern _pattern;
   final double _tempo;
@@ -8,7 +15,17 @@ class UserInputAnalyzer {
   final _referenceHits = List<_HitReference>.empty(growable: true);
   final _userHits = List<_UserHit>.empty(growable: true);
 
+  /// Used to calculate position within repeating pattern.
+  ///
+  /// Assumes 4/4 (4 beats per bar).
   late final double _patternLengthBeats;
+
+  /// Accuracity in beats.
+  late final accuracityRadius;
+
+  /// Accuracity in beats. Since beat is 1/4 musical size, 0.5 means 1/8.
+  static const double defaultAccuracity = 0.5;
+
 
   UserInputAnalyzer({
     required DrumPattern pattern,
@@ -18,13 +35,24 @@ class UserInputAnalyzer {
     _generateTrainingData();
 
     _patternLengthBeats = _pattern.barsCount * 4;
+
+    accuracityRadius = computeGridTolerance(pattern.notes, pattern.barsCount);
   }
 
-  /// Clears all user input, makes analyzer ready for new run.
+  /// Prepares the analyzer for a new training run by resetting internal state.
   void clear() {
     _prepareTrainingData();
   }
 
+  /// Analyzes a single user hit and determines if it matches the reference
+  /// pattern.
+  ///
+  /// Returns [NoteHitResult] if hit is within 1/8 beat of a reference note,
+  /// otherwise [ExtraHitResult].
+  ///
+  /// [hitTimeSeconds] is absolute time since training start.
+  ///
+  /// See also [NoteHitResult] and [ExtraHitResult] for more details.
   InputAnalysisResult analyzeUserInput({required double hitTimeSeconds, required DrumPad pad}) {
     final secondsPerBeat = 60.0 / _tempo;
     final absHitBeats = hitTimeSeconds / secondsPerBeat;
@@ -45,7 +73,7 @@ class UserInputAnalyzer {
       }
     }
 
-    if (bestMatchIndex != -1 && minDeviation < 1/8) {
+    if (bestMatchIndex != -1 && minDeviation < accuracityRadius) {
       _referenceHits[bestMatchIndex].matched = true;
     } else {
       bestMatchIndex = -1;
@@ -72,12 +100,41 @@ class UserInputAnalyzer {
       return ExtraHitResult(
         repeatIndex: repeatIndex,
         beat: relHitBeats,
+        absoluteBeat: absHitBeats,
         pad: pad,
       );
     }
   }
 
-  /// Generates reference hits data.
+  @visibleForTesting
+  static double computeGridTolerance(Iterable<DrumNote> notes, int barsCount) {
+    if (notes.length < 2) return defaultAccuracity; // значение по умолчанию
+
+    final totalBeats = barsCount * 4.0; // длина паттерна в долях
+
+    final sortedTimes = notes
+        .map((n) => n.startTime)
+        .takeWhile((n) => n < totalBeats)
+        .toList();
+
+    double minDelta = double.infinity;
+
+    // Check all notes in pattern.
+    for (int i = 1; i < sortedTimes.length; i++) {
+      final delta = sortedTimes[i] - sortedTimes[i - 1];
+      if (delta > 0.0 && delta < minDelta) minDelta = delta;
+    }
+
+    // Check last and first notes.
+    final loopDelta = (sortedTimes.first + totalBeats) - sortedTimes.last;
+    if (loopDelta > 0.0 && loopDelta < minDelta) minDelta = loopDelta;
+
+    return min(minDelta / 2, defaultAccuracity);
+  }
+
+
+  /// Expands the reference pattern across [repeats], storing each note's
+  /// absolute beat position.
   void _generateTrainingData() {
     _referenceHits.clear();
 
@@ -99,6 +156,7 @@ class UserInputAnalyzer {
     _userHits.clear();
   }
 
+  /// Clears user hit list and unmarks matched references.
   void _prepareTrainingData() {
     _referenceHits.forEach((e) {
       e.matched = false;
@@ -108,7 +166,8 @@ class UserInputAnalyzer {
   }
 }
 
-
+/// Reference note with absolute beat position.
+/// [matched] prevents reusing this note in future comparisons.
 class _HitReference {
   final int noteIndex;
   final double beat;
@@ -125,7 +184,8 @@ class _HitReference {
   });
 }
 
-
+/// Stores beat time and match deviation for a user hit.
+/// [refIndex] is -1 if not matched.
 typedef _UserHit = ({
   double beat,
   DrumPad pad,
@@ -135,6 +195,12 @@ typedef _UserHit = ({
 
 sealed class InputAnalysisResult {}
 
+/// Indicates that the user's hit matched a reference note within the allowed timing window.
+///
+/// A single reference note can only be matched once. If multiple user hits fall near the same reference,
+/// only the first one is considered a valid match; others will be treated as [ExtraHitResult].
+///
+/// Notes may belong to the current repeat or logically to the next one (see [repeatAhead]).
 class NoteHitResult extends InputAnalysisResult {
   /// Note index in Rhythm Pattern.
   final int noteIndex;
@@ -175,14 +241,30 @@ class NoteHitResult extends InputAnalysisResult {
   });
 }
 
+/// Indicates that the user's hit did not match any reference note within the allowed timing window.
+///
+/// Extra hits may result from inaccurate timing or unintended pad presses.
 class ExtraHitResult extends InputAnalysisResult {
+  /// Repeat index this hit belongs to (starting from 0).
   final int repeatIndex;
+
+  /// Actual beat position within the pattern, without repeat offset.
+  ///
+  /// Can be negative if played slightly before the first beat.
   final double beat;
+
+  /// Actual beat position with repeat offset applied.
+  ///
+  /// Calculated as (repeatIndex * patternLength + beat).
+  final double absoluteBeat;
+
+  /// Which drum player hits. Left or right.
   final DrumPad pad;
 
   ExtraHitResult({
     required this.repeatIndex,
     required this.beat,
+    required this.absoluteBeat,
     required this.pad,
   });
 }
