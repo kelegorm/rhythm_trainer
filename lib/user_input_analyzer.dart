@@ -73,7 +73,7 @@ class UserInputAnalyzer {
       }
     }
 
-    if (bestMatchIndex != -1 && minDeviation < accuracityRadius) {
+    if (bestMatchIndex != -1 && minDeviation.abs() <= accuracityRadius) {
       _referenceHits[bestMatchIndex].matched = true;
     } else {
       bestMatchIndex = -1;
@@ -92,6 +92,7 @@ class UserInputAnalyzer {
         absoluteBeat: absHitBeats,
         pad: pad,
         deviation: minDeviation,
+        repeatAhead: relHitBeats < 0,
       );
     } else {
       final repeatIndex = absHitBeats ~/ _patternLengthBeats;
