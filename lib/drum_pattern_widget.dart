@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:rhythm_trainer/drum_pattern.dart';
-import 'dart:math';
-
 import 'package:rhythm_trainer/training_engine_events.dart';
 
 class DrumPatternWidget extends StatefulWidget {
@@ -81,11 +79,11 @@ class DrumPatternPainter extends CustomPainter {
 
     final horlinePaint = Paint()
       ..color = Colors.black
-      ..strokeWidth = 1;
+      ..strokeWidth = 0.5;
 
     final barlinePaint = Paint()
       ..color = Colors.black
-      ..strokeWidth = 2;
+      ..strokeWidth = 0.5;
 
     final notePaint = Paint()
       ..color = Colors.red.shade900
@@ -99,18 +97,25 @@ class DrumPatternPainter extends CustomPainter {
     final lowerLaneY = size.height * 0.66;
     const double noteSize = 10.0;
 
+    const padding = 10.0;
+    final contentWidth = size.width - padding * 2;
+
+    final barWidth = contentWidth / (pattern.barsCount);
+
     // 1. Рисуем горизонтальные линии (линейки)
-    _drawHorizontalLanes(canvas, size, horlinePaint, upperLaneY, lowerLaneY);
+    _drawHorizontalLanes(canvas, padding, contentWidth, horlinePaint, upperLaneY, lowerLaneY);
 
     final _bars = _splitNotesByBars(pattern);
 
-    num start = 0;
-    for (var bar in _bars) {
-      start += _drawBarLine(start, canvas, size.height, barlinePaint);
-      start += _drawBarContent(start, canvas, bar, notePaint, upperLaneY, lowerLaneY, noteSize, tapPaint);
+    for (var i = 0; i< _bars.length; ++i) {
+      final bar = _bars[i];
+      final start = padding + barWidth * i;
+
+      _drawBarLine(start, canvas, size.height, barlinePaint);
+      _drawBarContent(start, barWidth, canvas, bar, notePaint, upperLaneY, lowerLaneY, noteSize, tapPaint);
     }
 
-    _drawBarLine(start, canvas, size.height, barlinePaint);
+    _drawBarLine(padding + contentWidth, canvas, size.height, barlinePaint);
   }
 
   @override
@@ -119,14 +124,14 @@ class DrumPatternPainter extends CustomPainter {
     print('shouldRepaint2: ${(oldDelegate as DrumPatternPainter).pattern != pattern}'); // false
     print('shouldRepaint3: ${(oldDelegate as DrumPatternPainter).userTaps.length != userTaps.length}');
 
-    return oldDelegate is! DrumPatternPainter
+    return oldDelegate is DrumPatternPainter
         || oldDelegate.pattern != pattern
         || oldDelegate.userTaps.length != userTaps.length;
   }
 
-  void _drawHorizontalLanes(Canvas canvas, Size size, Paint linePaint, double upperLaneY, double lowerLaneY) {
-    canvas.drawLine(Offset(0, upperLaneY), Offset(size.width, upperLaneY), linePaint);
-    canvas.drawLine(Offset(0, lowerLaneY), Offset(size.width, lowerLaneY), linePaint);
+  void _drawHorizontalLanes(Canvas canvas, double start, double width, Paint linePaint, double upperLaneY, double lowerLaneY) {
+    canvas.drawLine(Offset(start, upperLaneY), Offset(start + width, upperLaneY), linePaint);
+    canvas.drawLine(Offset(start, lowerLaneY), Offset(start + width, lowerLaneY), linePaint);
   }
 
   static List<List<DrumNote>> _splitNotesByBars(DrumPattern pattern) {
@@ -144,14 +149,13 @@ class DrumPatternPainter extends CustomPainter {
     return result;
   }
 
-  num _drawBarLine(num start, Canvas canvas, double height, Paint linePaint) {
-    canvas.drawLine(Offset(start + 10.0, 0), Offset(start + 10.0, height), linePaint);
-
-    return 20.0;
+  void _drawBarLine(double start, Canvas canvas, double height, Paint linePaint) {
+    canvas.drawLine(Offset(start, 0), Offset(start, height), linePaint);
   }
 
-  num _drawBarContent(
-    num contentStart,
+  void _drawBarContent(
+    double contentStart,
+    double barWidth,
     Canvas canvas,
     List<DrumNote> bar,
     Paint paint,
@@ -160,24 +164,19 @@ class DrumPatternPainter extends CustomPainter {
     double noteSize,
     Paint tapPaint,
   ) {
-    final barWidth = max(bar.length * 25.0, 50.0);
-    var start = contentStart;
-
     for (final note in bar) {
-      final x = start + (note.startTime / 4) * barWidth + noteSize*0.5;
+      final x = contentStart + (note.startTime / 4) * barWidth;
       final y = note.pad == DrumPad.right ? upperLaneY : lowerLaneY;
 
       _drawCross(canvas, Offset(x, y), noteSize, paint);
     }
 
     for (final tap in userTaps) {
-      final x = start + (tap.beat / 4) * barWidth + 10; // +10 = отступ начала
+      final x = contentStart + (tap.beat / 4) * barWidth;
       final y = (tap.pad == DrumPad.right ? upperLaneY : lowerLaneY) + 3;
 
       _drawTriangle(canvas, Offset(x, y), 6.0, tapPaint);
     }
-
-    return barWidth;
   }
 
   void _drawCross(Canvas canvas, Offset center, double size, Paint paint) {
