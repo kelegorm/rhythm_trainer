@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:rhythm_trainer/drum_pattern.dart';
+import 'package:rhythm_trainer/midi_listener.dart';
 import 'package:rhythm_trainer/native_wrapper.dart' as aud;
 import 'package:rhythm_trainer/samples_library.dart';
 import 'package:rhythm_trainer/simple_training_engine.dart';
@@ -38,13 +39,18 @@ class TrainingPageBL {
 
     await _setSceneSettings();
 
+    _midiInputHandler = MidiInputHandler(logger: _logCtrl.sink);
+    await _midiInputHandler.init();
+
+    _midiInputHandler.stream.listen(_onMidi);
+
     _setState(ReadyTrainingState());
   }
 
   void startTraining() {
+    _engine.start();
     aud.runScene(metronomeEnabled: true, sequenceEnabled: false, tempo: _tempo);
     _setState(PlayingTrainingState());
-    _engine.start();
   }
 
   void startDemo() {
@@ -53,9 +59,9 @@ class TrainingPageBL {
   }
 
   void stop() {
+    _engine.stop();
     aud.stopScene();
     _setState(ReadyTrainingState());
-    _engine.stop();
   }
 
   void trigLeftPad() {
@@ -113,6 +119,14 @@ class TrainingPageBL {
     _stateCtrl.add(newState);
   }
 
+  void _onMidi(DrumPad event) {
+    switch (event) {
+      case DrumPad.left:
+        trigLeftPad();
+      case DrumPad.right:
+        trigRightPad();
+    }
+  }
 
   final DrumPattern _pattern;
   final double _tempo = 80.0;
@@ -120,6 +134,7 @@ class TrainingPageBL {
 
   late final TrainingEngine _engine;
 
+  late final MidiInputHandler _midiInputHandler;
   TrainingState _state = InitialTrainingState();
   final StreamController<TrainingState> _stateCtrl = StreamController<TrainingState>();
   late final Stream<TrainingEngineEvent> _rhythmEvents;
