@@ -98,6 +98,10 @@ extern "C" {
             alog("Failed to open stream");
             return;
         }
+        alog("Opened stream: sampleRate = %d, framesPerBurst = %d, bufferSize = %d",
+             globalStream->getSampleRate(),
+             globalStream->getFramesPerBurst(),
+             globalStream->getBufferSizeInFrames());
 
         result = globalStream->requestStart();
         if (result != oboe::Result::OK) {
@@ -212,6 +216,9 @@ extern "C" {
 
         metronome->setEnabled(metronomeBool);
         rhythmPlayer->setEnabled(sequenceBool);
+
+        globalCallback->resetBusy();
+
         transport->setBPM(static_cast<double>(temp));
         transport->play();
     }
@@ -225,7 +232,7 @@ oboe::AudioStreamBuilder makeOboeBuilder() {
     oboe::AudioStreamBuilder builder;
 
     builder.setFormat(oboe::AudioFormat::Float)
-            ->setBufferCapacityInFrames(256)
+            ->setBufferCapacityInFrames(512)
             ->setChannelCount(oboe::ChannelCount::Stereo)
             ->setSampleRate(SAMPLE_RATE)
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
