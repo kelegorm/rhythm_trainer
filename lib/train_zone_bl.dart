@@ -15,6 +15,8 @@ class TrainingPageBL {
 
   Stream<TrainingState> get states => _stateCtrl.stream;
 
+  Stream<String> get log => _logCtrl.stream;
+
   Stream<TrainingEngineEvent> get rhythmEvents => _rhythmEvents;
   TrainingEngineEvent get  lastRhythmEvent => _engine.event;
 
@@ -27,6 +29,7 @@ class TrainingPageBL {
     );
 
     _rhythmEvents = _engine.events.asBroadcastStream();
+    _rhythmEvents.listen(_testListening);
   }
 
 
@@ -130,14 +133,27 @@ class TrainingPageBL {
 
   final DrumPattern _pattern;
   final double _tempo = 80.0;
+
   final int _repeats = 4;
+
+  void _testListening(TrainingEngineEvent event) {
+    switch (event) {
+      case NoteHit hit:
+        _logCtrl.add("Note: ${hit.noteIndex}, deviation: ${hit.deviation}");
+
+      default:
+    }
+  }
 
   late final TrainingEngine _engine;
 
   late final MidiInputHandler _midiInputHandler;
   TrainingState _state = InitialTrainingState();
   final StreamController<TrainingState> _stateCtrl = StreamController<TrainingState>();
+
   late final Stream<TrainingEngineEvent> _rhythmEvents;
+
+  final StreamController<String> _logCtrl = StreamController<String>();
 }
 
 sealed class TrainingState {}

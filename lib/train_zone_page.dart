@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rhythm_trainer/drum_pattern.dart';
 import 'package:rhythm_trainer/drum_pattern_widget.dart';
+import 'package:rhythm_trainer/log_widget.dart';
 import 'package:rhythm_trainer/train_zone_bl.dart';
 
 
@@ -97,7 +98,20 @@ class _TrainZonePageState extends State<TrainZonePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: body,
+      body: Stack(children: [
+        body,
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: SizedBox(
+            height: 120,
+            child: LogWidget(
+              stream: bl.log,
+            ),
+          ),
+        ),
+      ]),
     );
   }
 
