@@ -55,13 +55,11 @@ class _DrumPatternWidgetState extends State<DrumPatternWidget> {
       case NoteHit hit:
         setState(() {
           userTaps.add(UserTap(beat: hit.beat, pad: hit.pad));
-          print('Note Hit!!');
         });
 
       case ExtraHit hit:
         setState(() {
           userTaps.add(UserTap(beat: hit.beat, pad: hit.pad));
-          print('Extra Note Hit!!');
         });
     }
   }
@@ -77,11 +75,19 @@ class DrumPatternPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     print('paint');
 
-    final horlinePaint = Paint()
+    final horLinePaint = Paint()
       ..color = Colors.black
       ..strokeWidth = 0.5;
 
-    final barlinePaint = Paint()
+    final barLinePaint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 2.0;
+
+    final strongBeatLinePaint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 1.0;
+
+    final weakBeatLinePaint = Paint()
       ..color = Colors.black
       ..strokeWidth = 0.5;
 
@@ -101,30 +107,43 @@ class DrumPatternPainter extends CustomPainter {
     final contentWidth = size.width - padding * 2;
 
     final barWidth = contentWidth / (pattern.barsCount);
+    final beatWidth = barWidth / 4;
+    final halfBeatWidth = barWidth / 8;
+
 
     // 1. Рисуем горизонтальные линии (линейки)
-    _drawHorizontalLanes(canvas, padding, contentWidth, horlinePaint, upperLaneY, lowerLaneY);
+    _drawHorizontalLanes(canvas, padding, contentWidth, horLinePaint, upperLaneY, lowerLaneY);
 
-    final _bars = _splitNotesByBars(pattern);
+    final bars = _splitNotesByBars(pattern);
 
-    for (var i = 0; i< _bars.length; ++i) {
-      final bar = _bars[i];
+    for (var i = 0; i< bars.length; ++i) {
+      final bar = bars[i];
       final start = padding + barWidth * i;
 
-      _drawBarLine(start, canvas, size.height, barlinePaint);
+      _drawBarLine(start, canvas, size.height, barLinePaint);
+
+      for (var j = 0; j < 8; ++j) {
+        final pos = start + halfBeatWidth * j;
+
+        if (j % 8 == 0) {
+          _drawBarLine(pos, canvas, size.height, barLinePaint);
+        } else if (j % 4 == 0) {
+          _drawBarLine(pos, canvas, size.height, strongBeatLinePaint);
+        } else {
+          _drawBarLine(pos, canvas, size.height, weakBeatLinePaint);
+        }
+
+      }
+
       _drawBarContent(start, barWidth, canvas, bar, notePaint, upperLaneY, lowerLaneY, noteSize, tapPaint);
     }
 
-    _drawBarLine(padding + contentWidth, canvas, size.height, barlinePaint);
+    _drawBarLine(padding + contentWidth, canvas, size.height, barLinePaint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    print('shouldRepaint1: ${oldDelegate is! DrumPatternPainter}'); // false
-    print('shouldRepaint2: ${(oldDelegate as DrumPatternPainter).pattern != pattern}'); // false
-    print('shouldRepaint3: ${(oldDelegate as DrumPatternPainter).userTaps.length != userTaps.length}');
-
-    return oldDelegate is DrumPatternPainter
+    return oldDelegate is! DrumPatternPainter
         || oldDelegate.pattern != pattern
         || oldDelegate.userTaps.length != userTaps.length;
   }
