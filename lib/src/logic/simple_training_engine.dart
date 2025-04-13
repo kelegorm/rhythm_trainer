@@ -34,6 +34,7 @@ class SimpleTrainingEngine implements TrainingEngine {
 
   @override
   void start() {
+    _inputAnalyzer.clear();
     _trainingStartTime = DateTime.now();
     pushEvent(TrainingStarted());
   }
