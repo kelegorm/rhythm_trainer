@@ -1,4 +1,5 @@
 import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/user_accuracy.dart';
 
 sealed class TrainingEngineEvent {}
 
@@ -47,6 +48,9 @@ class NoteHit extends TrainingEngineEvent {
   /// beat of the next repeat, but logically belongs to it.
   final bool repeatAhead;
 
+  /// Data about how accurate note hit was depending on exercise parameters.
+  final AccuracyResult accuracy;
+
   NoteHit({
     required this.noteIndex,
     required this.repeatIndex,
@@ -54,6 +58,7 @@ class NoteHit extends TrainingEngineEvent {
     required this.absoluteBeat,
     required this.pad,
     required this.deviation,
+    required this.accuracy,
     this.repeatAhead = false,
   });
 }

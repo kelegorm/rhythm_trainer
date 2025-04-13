@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/exercise.dart';
+import 'package:rhythm_trainer/src/logic/user_accuracy.dart';
 import 'package:rhythm_trainer/train_zone_page.dart';
 
 class MainApp extends StatelessWidget {
@@ -8,7 +10,12 @@ class MainApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final pattern = makePattern();
+    final exercise = Exercise(
+      pattern: makePattern(),
+      repetitions: 4,
+      accuracy: AverageQuarterAccuracy(0.8),
+      tempo: 80.0,
+    );
 
     return MaterialApp(
       title: 'Flutter Demo',
@@ -18,7 +25,7 @@ class MainApp extends StatelessWidget {
       ),
       home: TrainZonePage(
         title: 'Flutter Demo Home Page',
-        pattern: pattern,
+        exercise: exercise,
       ),
     );
   }

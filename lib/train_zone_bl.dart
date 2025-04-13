@@ -4,6 +4,7 @@ import 'package:rhythm_trainer/midi_listener.dart';
 import 'package:rhythm_trainer/native_wrapper.dart' as aud;
 import 'package:rhythm_trainer/samples_library.dart';
 import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/exercise.dart';
 import 'package:rhythm_trainer/src/logic/simple_training_engine.dart';
 import 'package:rhythm_trainer/src/logic/training_engine.dart';
 import 'package:rhythm_trainer/src/logic/training_engine_events.dart';
@@ -21,11 +22,9 @@ class TrainingPageBL {
   TrainingEngineEvent get  lastRhythmEvent => _engine.event;
 
 
-  TrainingPageBL({required DrumPattern pattern}) : _pattern = pattern {
+  TrainingPageBL({required Exercise exercise}) : _exercise = exercise {
     _engine = SimpleTrainingEngine(
-      pattern: _pattern,
-      tempo: _tempo,
-      repeats: _repeats,
+      exercise: _exercise,
     );
 
     _rhythmEvents = _engine.events.asBroadcastStream();
@@ -52,12 +51,12 @@ class TrainingPageBL {
 
   void startTraining() {
     _engine.start();
-    aud.runScene(metronomeEnabled: true, sequenceEnabled: false, tempo: _tempo);
+    aud.runScene(metronomeEnabled: true, sequenceEnabled: false, tempo: _exercise.tempo);
     _setState(PlayingTrainingState());
   }
 
   void startDemo() {
-    aud.runScene(metronomeEnabled: true, sequenceEnabled: true, tempo: _tempo);
+    aud.runScene(metronomeEnabled: true, sequenceEnabled: true, tempo: _exercise.tempo);
     _setState(PlayingDemoState());
   }
 
@@ -131,10 +130,7 @@ class TrainingPageBL {
     }
   }
 
-  final DrumPattern _pattern;
-  final double _tempo = 80.0;
-
-  final int _repeats = 4;
+  final Exercise _exercise;
 
   void _testListening(TrainingEngineEvent event) {
     switch (event) {

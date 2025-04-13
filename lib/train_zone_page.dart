@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
 import 'package:rhythm_trainer/drum_pattern_widget.dart';
 import 'package:rhythm_trainer/log_widget.dart';
+import 'package:rhythm_trainer/src/logic/exercise.dart';
 import 'package:rhythm_trainer/train_zone_bl.dart';
 
 
 class TrainZonePage extends StatefulWidget {
-  const TrainZonePage({required this.title, required this.pattern, super.key, });
+  const TrainZonePage({required this.title, required this.exercise, super.key, });
 
   final String title;
-  final DrumPattern pattern;
+  final Exercise exercise;
 
   @override
   State<TrainZonePage> createState() => _TrainZonePageState();
@@ -22,7 +23,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
   void initState() {
     super.initState();
 
-    bl = TrainingPageBL(pattern: widget.pattern);
+    bl = TrainingPageBL(exercise: widget.exercise);
     bl.prepareScene();
   }
 
@@ -30,7 +31,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
   void didUpdateWidget(TrainZonePage oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.pattern != widget.pattern) {
+    if (oldWidget.exercise != widget.exercise) {
       // todo something
     }
   }
@@ -119,7 +120,7 @@ class _TrainZonePageState extends State<TrainZonePage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        _buildPattern(widget.pattern),
+        _buildPattern(widget.exercise.pattern),
         Row(
           children: buttons,
         ),
