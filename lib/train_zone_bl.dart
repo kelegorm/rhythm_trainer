@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:rhythm_trainer/drum_pattern.dart';
 import 'package:rhythm_trainer/midi_listener.dart';
 import 'package:rhythm_trainer/native_wrapper.dart' as aud;
 import 'package:rhythm_trainer/samples_library.dart';
-import 'package:rhythm_trainer/simple_training_engine.dart';
-import 'package:rhythm_trainer/training_engine.dart';
-import 'package:rhythm_trainer/training_engine_events.dart';
+import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/simple_training_engine.dart';
+import 'package:rhythm_trainer/src/logic/training_engine.dart';
+import 'package:rhythm_trainer/src/logic/training_engine_events.dart';
 
 enum DrumPadEnum { left, right }
 

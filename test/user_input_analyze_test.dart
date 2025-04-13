@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rhythm_trainer/drum_pattern.dart';
-import 'package:rhythm_trainer/user_input_analyzer.dart';
+import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/user_input_analyzer.dart';
 
 void main() {
   group('One hit tests', () {

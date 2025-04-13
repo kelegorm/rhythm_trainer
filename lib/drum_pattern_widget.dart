@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rhythm_trainer/drum_pattern.dart';
-import 'package:rhythm_trainer/training_engine_events.dart';
+import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/training_engine_events.dart';
 
 class DrumPatternWidget extends StatefulWidget {
   final DrumPattern pattern;

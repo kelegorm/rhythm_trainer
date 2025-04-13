@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:meta/meta.dart';
-import 'package:rhythm_trainer/drum_pattern.dart';
-import 'package:rhythm_trainer/training_engine.dart';
-import 'package:rhythm_trainer/training_engine_events.dart';
-import 'package:rhythm_trainer/user_input_analyzer.dart';
+import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/training_engine.dart';
+import 'package:rhythm_trainer/src/logic/training_engine_events.dart';
+import 'package:rhythm_trainer/src/logic/user_input_analyzer.dart';
 
 class SimpleTrainingEngine implements TrainingEngine {
   final DrumPattern pattern;

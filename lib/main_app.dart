@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rhythm_trainer/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
 import 'package:rhythm_trainer/train_zone_page.dart';
 
 class MainApp extends StatelessWidget {

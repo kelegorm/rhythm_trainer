@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_midi_command/flutter_midi_command.dart';
-import 'package:rhythm_trainer/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
 
 class MidiInputHandler {
   final _controller = StreamController<DrumPad>.broadcast();

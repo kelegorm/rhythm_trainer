@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:rhythm_trainer/drum_pattern.dart';
-import 'package:rhythm_trainer/training_engine_events.dart';
+import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/training_engine_events.dart';
 
 abstract class TrainingEngine {
   /// Поток событий анализа (ноты, попадания, пропуски, повторы)

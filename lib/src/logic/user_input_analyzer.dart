@@ -1,7 +1,7 @@
 import 'dart:math' show min;
 
 import 'package:meta/meta.dart';
-import 'package:rhythm_trainer/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
 
 /// Matches user hits to reference rhythm notes and classifies each hit as
 /// matched or extra hits.

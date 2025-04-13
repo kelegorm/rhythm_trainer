@@ -1,4 +1,4 @@
-import 'package:rhythm_trainer/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
 
 sealed class TrainingEngineEvent {}
 
