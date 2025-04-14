@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
-import 'package:rhythm_trainer/drum_pattern_widget.dart';
+import 'package:rhythm_trainer/src/widgets/drum_pattern/drum_pattern_widget.dart';
 import 'package:rhythm_trainer/log_widget.dart';
 import 'package:rhythm_trainer/src/logic/exercise.dart';
 import 'package:rhythm_trainer/train_zone_bl.dart';

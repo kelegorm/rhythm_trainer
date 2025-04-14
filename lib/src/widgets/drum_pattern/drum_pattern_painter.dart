@@ -1,78 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
-import 'package:rhythm_trainer/src/logic/training_engine_events.dart';
 import 'package:rhythm_trainer/src/logic/user_accuracy.dart';
-
-class DrumPatternWidget extends StatefulWidget {
-  final DrumPattern pattern;
-  final Stream<TrainingEngineEvent> events;
-  final TrainingEngineEvent lastEvent;
-
-  DrumPatternWidget({
-    required this.pattern,
-    required this.events,
-    required this.lastEvent,
-    super.key,
-  });
-
-  @override
-  State<DrumPatternWidget> createState() => _DrumPatternWidgetState();
-}
-
-
-class _DrumPatternWidgetState extends State<DrumPatternWidget> {
-  final List<UserTap> userTaps = <UserTap>[];
-
-  @override
-  void initState() {
-    super.initState();
-
-    widget.events.listen(_onEvent);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: DrumPatternPainter(
-        pattern: widget.pattern,
-        userTaps: userTaps.toList(),
-      ),
-    );
-  }
-
-  void _onEvent(TrainingEngineEvent event) {
-    switch (event) {
-      case TrainingStarted():
-        setState(() {
-          userTaps.clear();
-        });
-
-      case TrainingEnded():
-      case RepeatStarted():
-      case RepeatEnded():
-      case NoteMissed():
-        return;
-
-      case NoteHit hit:
-        setState(() {
-          userTaps.add(UserTap(
-            beat: hit.beat,
-            pad: hit.pad,
-            accuracyLevel: hit.accuracy.level,
-          ));
-        });
-
-      case ExtraHit hit:
-        setState(() {
-          userTaps.add(UserTap(
-            beat: hit.beat,
-            pad: hit.pad,
-            accuracyLevel: null,
-          ));
-        });
-    }
-  }
-}
+import 'package:rhythm_trainer/src/widgets/drum_pattern/user_tap.dart';
 
 class DrumPatternPainter extends CustomPainter {
   final DrumPattern pattern;
@@ -178,15 +107,15 @@ class DrumPatternPainter extends CustomPainter {
   }
 
   void _drawBarContent(
-    double contentStart,
-    double barWidth,
-    Canvas canvas,
-    List<DrumNote> bar,
-    Paint paint,
-    double upperLaneY,
-    double lowerLaneY,
-    double noteSize,
-  ) {
+      double contentStart,
+      double barWidth,
+      Canvas canvas,
+      List<DrumNote> bar,
+      Paint paint,
+      double upperLaneY,
+      double lowerLaneY,
+      double noteSize,
+      ) {
     for (final note in bar) {
       final x = contentStart + (note.startTime / 4) * barWidth;
       final y = note.pad == DrumPad.right ? upperLaneY : lowerLaneY;
@@ -204,7 +133,7 @@ class DrumPatternPainter extends CustomPainter {
 
   void _drawUserNote(Canvas canvas, double x, double y, AccuracyLevel? accuracyLevel) {
     final tapPaint = Paint()
-      // ..color = Colors.green.shade800
+    // ..color = Colors.green.shade800
       ..style = PaintingStyle.fill;
 
     tapPaint.color = switch (accuracyLevel) {
@@ -250,18 +179,4 @@ class DrumPatternPainter extends CustomPainter {
 
     canvas.drawPath(path, paint);
   }
-}
-
-/// User notes we collected from Training Engine.
-class UserTap {
-  final double beat; // или absoluteBeat, если есть повторения
-  final DrumPad pad;
-  /// Null means it's extra hit.
-  final AccuracyLevel? accuracyLevel;
-
-  UserTap({
-    required this.beat,
-    required this.pad,
-    required this.accuracyLevel,
-  });
 }
