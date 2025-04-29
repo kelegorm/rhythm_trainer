@@ -68,7 +68,8 @@ flutter:
     - assets/sounds/Clave Ekko Smash V6 48.wav
     - assets/sounds/Block 1 Ekko Smash V6.wav
     - assets/sounds/Block 1 Ekko Smash V6 48.wav
-  #   - images/a_dot_burr.jpeg
+    - assets/images/train_background2.png
+    - assets/images/paper1.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

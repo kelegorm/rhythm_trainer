@@ -59,7 +59,7 @@ class _DrumPatternWidgetState extends State<DrumPatternWidget> {
                   child: TapEffectWidget(
                     effect: effect,
                     onFinished: _removeEffect,
-                    key: ObjectKey(effect),
+                    key: GlobalObjectKey(effect),
                   ),
                 )),
           ]),

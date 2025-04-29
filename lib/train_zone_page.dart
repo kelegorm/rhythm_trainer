@@ -95,25 +95,38 @@ class _TrainZonePageState extends State<TrainZonePage> {
 
   Widget _buildScaffold(Widget body) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
+      // appBar: AppBar(
+      //   backgroundColor: Colors.black,
+      //   title: Text(widget.title),
+      //   foregroundColor: Colors.black26,
+      // ),
       body: Stack(children: [
-        body,
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: SizedBox(
-            height: 120,
-            child: LogWidget(
-              stream: bl.log,
-            ),
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/train_background2.png',
+            fit: BoxFit.cover,
           ),
         ),
+        body,
+        _buildLog(),
       ]),
     );
+  }
+
+  Widget _buildLog() {
+    return Container();
+
+    return Positioned(
+        bottom: 0,
+        left: 0,
+        right: 0,
+        child: SizedBox(
+          height: 120,
+          child: LogWidget(
+            stream: bl.log,
+          ),
+        ),
+      );
   }
 
   Widget _buildMainScreen(List<Widget> buttons) {
@@ -171,12 +184,26 @@ class _TrainZonePageState extends State<TrainZonePage> {
   }
 
   Widget _buildPattern(DrumPattern pattern) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: SizedBox(
-        height: 70,
-        width: double.infinity,
-        child: DrumPatternWidget(pattern: pattern, events: bl.rhythmEvents, lastEvent: bl.lastRhythmEvent),
+    return SizedBox(
+      height: 180,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/paper1.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(28.0),
+            child: SizedBox(
+              height: 70,
+              width: double.infinity,
+              child: DrumPatternWidget(pattern: pattern, events: bl.rhythmEvents, lastEvent: bl.lastRhythmEvent),
+            ),
+          ),
+        ],
       ),
     );
   }
