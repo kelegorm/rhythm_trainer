@@ -8,7 +8,8 @@ class AccuracyResult {
   final double accuracy;
   final AccuracyLevel level;
 
-  AccuracyResult(this.accuracy, this.level);
+  AccuracyResult(this.accuracy, this.level)
+      : assert(accuracy >= 0.0 && accuracy <= 1.0);
 }
 
 enum AccuracyLevel {
