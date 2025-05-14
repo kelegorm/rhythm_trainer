@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
 import 'package:rhythm_trainer/src/logic/user_accuracy.dart';
-import 'package:rhythm_trainer/src/widgets/drum_pattern/user_tap.dart';
+import 'package:rhythm_trainer/src/widgets/rhythm_view/user_tap.dart';
 
-class DrumPatternPainter extends CustomPainter {
+class StaticDrumPatternPainter extends CustomPainter {
   final DrumPattern pattern;
   final List<UserTap> userTaps;
 
-  DrumPatternPainter({super.repaint, required this.pattern, required this.userTaps});
+  StaticDrumPatternPainter({super.repaint, required this.pattern, required this.userTaps});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -77,7 +77,7 @@ class DrumPatternPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return oldDelegate is! DrumPatternPainter
+    return oldDelegate is! StaticDrumPatternPainter
         || oldDelegate.pattern != pattern
         || oldDelegate.userTaps.length != userTaps.length;
   }

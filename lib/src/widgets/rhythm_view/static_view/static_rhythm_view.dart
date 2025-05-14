@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
 import 'package:rhythm_trainer/src/logic/training_engine_events.dart';
-import 'package:rhythm_trainer/src/widgets/drum_pattern/drum_pattern_painter.dart';
-import 'package:rhythm_trainer/src/widgets/drum_pattern/tap_effect.dart';
-import 'package:rhythm_trainer/src/widgets/drum_pattern/tap_effect_widget.dart';
-import 'package:rhythm_trainer/src/widgets/drum_pattern/user_tap.dart';
+import 'package:rhythm_trainer/src/widgets/rhythm_view/static_view/static_rhythm_painter.dart';
+import 'package:rhythm_trainer/src/widgets/rhythm_view/tap_data.dart';
+import 'package:rhythm_trainer/src/widgets/rhythm_view/effects/my_first_tap_effect_widget.dart';
+import 'package:rhythm_trainer/src/widgets/rhythm_view/user_tap.dart';
 
-class DrumPatternWidget extends StatefulWidget {
+class StaticRhythmView extends StatefulWidget {
   final DrumPattern pattern;
   final Stream<TrainingEngineEvent> events;
   final TrainingEngineEvent lastEvent;
 
-  DrumPatternWidget({
+  StaticRhythmView({
     required this.pattern,
     required this.events,
     required this.lastEvent,
@@ -19,13 +19,13 @@ class DrumPatternWidget extends StatefulWidget {
   });
 
   @override
-  State<DrumPatternWidget> createState() => _DrumPatternWidgetState();
+  State<StaticRhythmView> createState() => _StaticRhythmViewState();
 }
 
 
-class _DrumPatternWidgetState extends State<DrumPatternWidget> {
+class _StaticRhythmViewState extends State<StaticRhythmView> {
   final List<UserTap> userTaps = <UserTap>[];
-  final List<TapEffect> activeEffects = [];
+  final List<TapData> activeEffects = [];
   Size _canvasSize = Size.zero;
 
   @override
@@ -46,7 +46,7 @@ class _DrumPatternWidgetState extends State<DrumPatternWidget> {
           child: Stack(children: [
             SizedBox.expand(
               child: CustomPaint(
-                painter: DrumPatternPainter(
+                painter: StaticDrumPatternPainter(
                   pattern: widget.pattern,
                   userTaps: userTaps.toList(),
                 ),
@@ -56,7 +56,7 @@ class _DrumPatternWidgetState extends State<DrumPatternWidget> {
                 Positioned(
                   left: effect.position.dx,
                   top: effect.position.dy,
-                  child: TapEffectWidget(
+                  child: MyFirstTapEffectWidget(
                     effect: effect,
                     onFinished: _removeEffect,
                     key: GlobalObjectKey(effect),
@@ -107,14 +107,14 @@ class _DrumPatternWidgetState extends State<DrumPatternWidget> {
   void _processUserTap(UserTap tap) {
     userTaps.add(tap);
 
-    activeEffects.add(TapEffect(
+    activeEffects.add(TapData(
       position: _calculateEffectPosition(tap, _canvasSize, widget.pattern.barsCount),
       level: tap.accuracyLevel,
       startTime: DateTime.now(),
     ));
   }
 
-  void _removeEffect(TapEffect effect) {
+  void _removeEffect(TapData effect) {
     setState(() {
       activeEffects.remove(effect);
     });

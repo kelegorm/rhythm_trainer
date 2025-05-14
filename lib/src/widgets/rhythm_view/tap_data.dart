@@ -1,12 +1,12 @@
 import 'package:flutter/animation.dart';
 import 'package:rhythm_trainer/src/logic/user_accuracy.dart';
 
-class TapEffect {
+class TapData {
   final Offset position;
   final AccuracyLevel? level;
   final DateTime startTime;
 
-  TapEffect({
+  TapData({
     required this.position,
     required this.level,
     required this.startTime,

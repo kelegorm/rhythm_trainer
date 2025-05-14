@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:rhythm_trainer/src/widgets/drum_pattern/tap_effect.dart';
+import 'package:rhythm_trainer/src/widgets/rhythm_view/effects/tap_effect.dart';
+import 'package:rhythm_trainer/src/widgets/rhythm_view/tap_data.dart';
 
-typedef EffectFinished = void Function(TapEffect effect);
+class MyFirstTapEffectWidget extends StatefulWidget implements TapEffect {
+  @override
+  final TapData effect;
 
-class TapEffectWidget extends StatefulWidget {
-  final TapEffect effect;
+  @override
   final EffectFinished onFinished;
 
-  const TapEffectWidget({
+  const MyFirstTapEffectWidget({
     required this.effect,
     required this.onFinished,
     super.key,
   });
 
   @override
-  State<TapEffectWidget> createState() => _TapEffectWidgetState();
+  State<MyFirstTapEffectWidget> createState() => _MyFirstTapEffectWidgetState();
 }
 
-class _TapEffectWidgetState extends State<TapEffectWidget> with SingleTickerProviderStateMixin {
+
+class _MyFirstTapEffectWidgetState extends State<MyFirstTapEffectWidget> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _animation;
 
