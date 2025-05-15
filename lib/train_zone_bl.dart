@@ -51,12 +51,12 @@ class TrainingPageBL {
 
   void startTraining() {
     _engine.start();
-    aud.runScene(metronomeEnabled: true, sequenceEnabled: false, tempo: _exercise.tempo);
+    aud.runScene(metronomeEnabled: true, sequenceEnabled: false, tempo: _exercise.timing.tempo);
     _setState(PlayingTrainingState());
   }
 
   void startDemo() {
-    aud.runScene(metronomeEnabled: true, sequenceEnabled: true, tempo: _exercise.tempo);
+    aud.runScene(metronomeEnabled: true, sequenceEnabled: true, tempo: _exercise.timing.tempo);
     _setState(PlayingDemoState());
   }
 

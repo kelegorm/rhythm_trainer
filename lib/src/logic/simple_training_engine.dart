@@ -27,7 +27,7 @@ class SimpleTrainingEngine implements TrainingEngine {
   }) {
     _inputAnalyzer = UserInputAnalyzer(
       pattern: exercise.pattern,
-      tempo: exercise.tempo,
+      timing: exercise.timing,
       repeats: exercise.repetitions,
     );
   }

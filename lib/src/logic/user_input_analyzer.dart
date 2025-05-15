@@ -2,6 +2,7 @@ import 'dart:math' show min;
 
 import 'package:meta/meta.dart';
 import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
+import 'package:rhythm_trainer/src/logic/timing.dart';
 
 /// Matches user hits to reference rhythm notes and classifies each hit as
 /// matched or extra hits.
@@ -9,7 +10,7 @@ import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
 /// Does not handle missed notes or time progression. Call [clear] to reuse.
 class UserInputAnalyzer {
   final DrumPattern _pattern;
-  final double _tempo;
+  final Timing _timing;
   final int _repeats;
 
   final _referenceHits = List<_HitReference>.empty(growable: true);
@@ -18,7 +19,7 @@ class UserInputAnalyzer {
   /// Used to calculate position within repeating pattern.
   ///
   /// Assumes 4/4 (4 beats per bar).
-  late final double _patternLengthBeats;
+  late final int _patternLengthBeats;
 
   /// Accuracity in beats.
   late final accuracityRadius;
@@ -29,12 +30,12 @@ class UserInputAnalyzer {
 
   UserInputAnalyzer({
     required DrumPattern pattern,
-    required double tempo,
+    required Timing timing,
     required int repeats,
-  }) : _repeats = repeats, _tempo = tempo, _pattern = pattern {
+  }) : _repeats = repeats, _timing = timing, _pattern = pattern {
     _generateTrainingData();
 
-    _patternLengthBeats = _pattern.barsCount * 4;
+    _patternLengthBeats = _pattern.barsCount * _timing.beatsPerBar;
 
     accuracityRadius = computeGridTolerance(pattern.notes, pattern.barsCount);
   }
@@ -54,7 +55,7 @@ class UserInputAnalyzer {
   ///
   /// See also [NoteHitResult] and [ExtraHitResult] for more details.
   InputAnalysisResult analyzeUserInput({required double hitTimeSeconds, required DrumPad pad}) {
-    final secondsPerBeat = 60.0 / _tempo;
+    final secondsPerBeat = 60.0 / _timing.tempo;
     final absHitBeats = hitTimeSeconds / secondsPerBeat;
 
     double minDeviation = double.infinity;

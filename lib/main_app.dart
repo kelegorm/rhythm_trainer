@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
 import 'package:rhythm_trainer/src/logic/exercise.dart';
+import 'package:rhythm_trainer/src/logic/timing.dart';
 import 'package:rhythm_trainer/src/logic/user_accuracy.dart';
 import 'package:rhythm_trainer/train_zone_page.dart';
 
@@ -14,7 +15,7 @@ class MainApp extends StatelessWidget {
       pattern: makePattern(),
       repetitions: 4,
       accuracy: AverageQuarterAccuracy(0.8),
-      tempo: 80.0,
+      timing: const Timing(tempo: 80.0, beatsPerBar: 4),
     );
 
     return MaterialApp(
@@ -32,7 +33,7 @@ class MainApp extends StatelessWidget {
 }
 
 DrumPattern makePattern() {
-  return DrumPattern(
+  return const DrumPattern(
       <DrumNote>[
         DrumNote(DrumPad.left, 0.0),
         DrumNote(DrumPad.right, 1.0),
