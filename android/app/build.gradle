@@ -49,6 +49,7 @@ android {
 
         externalNativeBuild {
             cmake {
+                cppFlags "-std=c++17"
                 arguments "-DANDROID_STL=c++_shared"
             }
         }
@@ -79,10 +80,6 @@ android {
 
 dependencies {
     implementation "com.google.oboe:oboe:1.9.3"
-}
-
-dependencies {
-    implementation 'com.google.oboe:oboe:1.9.3'
 }
 
 flutter {

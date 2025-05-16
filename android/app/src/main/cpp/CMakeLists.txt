@@ -39,7 +39,7 @@ find_library(log-lib log)
 
 find_package(oboe REQUIRED CONFIG)
 
-target_link_libraries(sound_player oboe::oboe ${log-lib})
+target_link_libraries(sound_player oboe::oboe ${log-lib} c++_shared)
 
 # Настройка стандартов C++ (требование oboe)
 set_target_properties(sound_player PROPERTIES

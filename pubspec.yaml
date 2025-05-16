@@ -39,6 +39,7 @@ dependencies:
   wav_io: ^2.0.3
   meta: ^1.15.0
   flutter_midi_command: ^0.5.3
+  go_router: ^15.1.2
 
 dev_dependencies:
   flutter_test:
