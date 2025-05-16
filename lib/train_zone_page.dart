@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
 import 'package:rhythm_trainer/log_widget.dart';
 import 'package:rhythm_trainer/src/logic/exercise.dart';
+import 'package:rhythm_trainer/src/widgets/rhythm_view/scrolling_rhythm_view/scrolling_rhythm_view.dart';
 import 'package:rhythm_trainer/src/widgets/rhythm_view/static_view/static_rhythm_view.dart';
 import 'package:rhythm_trainer/train_zone_bl.dart';
 
@@ -200,7 +201,11 @@ class _TrainZonePageState extends State<TrainZonePage> {
             child: SizedBox(
               height: 70,
               width: double.infinity,
-              child: StaticRhythmView(pattern: pattern, events: bl.rhythmEvents, lastEvent: bl.lastRhythmEvent),
+              child: ScrollingRhythmView(
+                pattern: pattern,
+                events: bl.rhythmEvents,
+                timing: widget.exercise.timing,
+              ),
             ),
           ),
         ],

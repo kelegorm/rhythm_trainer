@@ -3,7 +3,7 @@ class Timing {
   /// Tempo in beats per minute (BPM).
   final double tempo;
 
-  ///Number of beats in one bar (time signature numerator).
+  /// Number of beats in one bar (time signature numerator).
   final int beatsPerBar;
 
   const Timing({
