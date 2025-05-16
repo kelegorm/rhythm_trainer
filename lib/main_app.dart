@@ -75,7 +75,7 @@ final _router = GoRouter(
           pattern: makePattern(),
           repetitions: repetitions,
           accuracy: AverageQuarterAccuracy(accuracy),
-          tempo: tempo,
+          timing: const Timing(tempo: 80.0, beatsPerBar: 4),
         );
         return TrainZonePage(
           title: title,
