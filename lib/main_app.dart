@@ -4,6 +4,8 @@ import 'package:rhythm_trainer/src/logic/exercise.dart';
 import 'package:rhythm_trainer/src/logic/user_accuracy.dart';
 import 'package:rhythm_trainer/train_zone_page.dart';
 
+const title = "Two Hand Hero";
+
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
@@ -18,13 +20,13 @@ class MainApp extends StatelessWidget {
     );
 
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: title,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
       home: TrainZonePage(
-        title: 'Flutter Demo Home Page',
+        title: title,
         exercise: exercise,
       ),
     );
