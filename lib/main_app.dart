@@ -10,6 +10,8 @@ import 'package:rhythm_trainer/src/logic/timing.dart';
 import 'package:rhythm_trainer/src/logic/user_accuracy.dart';
 import 'package:rhythm_trainer/training_screen/train_zone_page.dart';
 
+const title = "Two Hand Hero";
+
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
@@ -18,7 +20,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routerConfig: _router,
-      title: 'Flutter Demo',
+      title: title,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -32,7 +34,7 @@ final _router = GoRouter(
   initialLocation: '/',
   routes: [
     GoRoute(
-      name: 'home',
+      name: title,
       path: '/',
       builder: (context, state) => const ExercisesListScreen(),
     ),

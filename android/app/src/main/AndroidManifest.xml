@@ -3,9 +3,9 @@
     <uses-permission android:name="android.permissions.VIBRATE"/>
     
     <application
-        android:label="rhythm_trainer"
+        android:label="Two Hand Hero"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"
