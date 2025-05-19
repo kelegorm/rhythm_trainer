@@ -4,7 +4,7 @@ import 'package:rhythm_trainer/log_widget.dart';
 import 'package:rhythm_trainer/src/logic/exercise.dart';
 import 'package:rhythm_trainer/src/widgets/rhythm_view/scrolling_rhythm_view/scrolling_rhythm_view.dart';
 import 'package:rhythm_trainer/src/widgets/rhythm_view/static_view/static_rhythm_view.dart';
-import 'package:rhythm_trainer/train_zone_bl.dart';
+import 'package:rhythm_trainer/training_screen/train_zone_bl.dart';
 
 
 class TrainZonePage extends StatefulWidget {

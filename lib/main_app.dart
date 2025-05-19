@@ -8,7 +8,7 @@ import 'package:rhythm_trainer/src/logic/drum_pattern.dart';
 import 'package:rhythm_trainer/src/logic/exercise.dart';
 import 'package:rhythm_trainer/src/logic/timing.dart';
 import 'package:rhythm_trainer/src/logic/user_accuracy.dart';
-import 'package:rhythm_trainer/train_zone_page.dart';
+import 'package:rhythm_trainer/training_screen/train_zone_page.dart';
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
