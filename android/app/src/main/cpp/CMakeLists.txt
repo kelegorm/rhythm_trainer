@@ -37,6 +37,8 @@ add_library(sound_player SHARED
         include/rhythm_trainer_session.h
         src/rhythm_trainer_session.cpp
         src/ffi_structs.h
+        src/oboe_host_wrapper.cpp
+        src/oboe_host_wrapper.cpp
 )
 
 find_library(log-lib log)

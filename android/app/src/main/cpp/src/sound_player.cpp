@@ -1,9 +1,6 @@
 #include <chrono>  // Для работы с временем
 #include <cstdint> // Для int64_t
 #include <algorithm> // std::fill
-#include <oboe/Oboe.h>
-#include "dsp/core/audio_source.h"
-#include "dsp/core/audio_config.h"
 #include "dsp/core/audio_host.h"
 #include "dsp/metronome.h"
 #include "dsp/mixer.h"
@@ -15,6 +12,7 @@
 #include "gen_wave.h"
 #include "rhythm_trainer_session.h"
 #include "ffi_structs.h"
+#include "oboe_host_wrapper.cpp"
 
 using std::shared_ptr;
 using std::make_shared;
@@ -24,97 +22,41 @@ using InitCallback = void(*)(int);
 
 void testGetSineWave();
 
-oboe::AudioStreamBuilder makeOboeBuilder();
 
-// Адаптер oboe::AudioStreamDataCallback - вызывает AudioHost::process
-class HostOboeCallback : public oboe::AudioStreamDataCallback {
-public:
-    explicit HostOboeCallback(std::shared_ptr<AudioHost> host) : host_(host) {}
-
-    oboe::DataCallbackResult onAudioReady(oboe::AudioStream* stream,
-                                          void* audioData,
-                                          int32_t numFrames) override {
-        auto out = static_cast<float*>(audioData);
-        const int32_t channels = stream->getChannelCount();
-        if (host_ && channels == 2) {
-            host_->process(out, numFrames);
-        } else if (out) {
-            std::fill(out, out + numFrames * channels, 0.0f);
-        }
-        return oboe::DataCallbackResult::Continue;
-    }
-
-private:
-    std::shared_ptr<AudioHost> host_;
-};
-
-shared_ptr<oboe::AudioStream> globalStream;
-std::shared_ptr<AudioHost> gHost;
-std::shared_ptr<HostOboeCallback> gHostCallback;
-std::shared_ptr<RhythmTrainerSession> gSession;
+shared_ptr<AudioHost> audioHost;
+shared_ptr<OboeHostWrapper> oboeWrapper;
+shared_ptr<RhythmTrainerSession> appAudioSession;
 
 extern "C" {
     void initializeAudio(InitCallback callback) {
         alog("Started initializing Audio");
-        if (globalStream != nullptr) return; // Поток уже открыт
-        if (!gHost) {
-            gHost = std::make_shared<AudioHost>(); // root по умолчанию — SilentSource
-            gHostCallback = std::make_shared<HostOboeCallback>(gHost);
+        if (oboeWrapper && oboeWrapper->isStarted()) return; // Поток уже открыт
+
+        appAudioSession = make_shared<RhythmTrainerSession>();
+        appAudioSession->init();
+
+        audioHost = make_shared<AudioHost>();
+        audioHost->swapSource(appAudioSession);
+
+        oboeWrapper = make_shared<OboeHostWrapper>(audioHost);
+
+        int err = oboeWrapper->start();
+        if (err != 0) {
+            if (callback) callback(err);
+            alog("Audio init met error");
+        } else {
+            if (callback) callback(0);
+            alog("Audio is initialized");
         }
-
-//        testGetSineWave();
-
-        oboe::AudioStreamBuilder myOboe = makeOboeBuilder(); // todo check if existed (but maybe not)
-        myOboe.setDataCallback(gHostCallback.get());
-
-        oboe::Result result = myOboe.openStream(globalStream);
-        if (result != oboe::Result::OK) {
-            if (callback) {
-                callback(1);
-            }
-
-            alog("Failed to open stream");
-            return;
-        }
-        alog("Opened stream: sampleRate = %d, framesPerBurst = %d, bufferSize = %d",
-             globalStream->getSampleRate(),
-             globalStream->getFramesPerBurst(),
-             globalStream->getBufferSizeInFrames());
-
-        result = globalStream->requestStart();
-        if (result != oboe::Result::OK) {
-            if (callback) {
-                callback(2);
-            }
-
-            alog("Failed to start stream");
-            return;
-        }
-
-        if (!gSession) {
-            gSession = std::make_shared<RhythmTrainerSession>();
-            gSession->init();
-        }
-        if (gHost) {
-            gHost->swapSource(gSession);
-        }
-
-        if (callback) {
-            callback(0);
-        }
-
-        alog("Audio is initialized");
     }
 
     void cleanupAudioStream() {
-        if (globalStream) {
-            globalStream->stop();
-            globalStream->close();
-            globalStream.reset();
+        if (oboeWrapper) {
+            oboeWrapper->stop();
+            oboeWrapper.reset();
         }
-        gHostCallback.reset();
-        gHost.reset();
-        gSession.reset();
+        audioHost.reset();
+        appAudioSession.reset();
         alog("Audio stream cleaned up!");
     }
 
@@ -142,8 +84,8 @@ extern "C" {
         auto leftSound = make_shared<Wave>(leftVector);
         auto rightSound = make_shared<Wave>(rightVector);
 
-        if (gSession) {
-            gSession->assignDrumWaves(leftSound, rightSound);
+        if (appAudioSession) {
+            appAudioSession->assignDrumWaves(leftSound, rightSound);
         }
 
         return 0;
@@ -170,58 +112,47 @@ extern "C" {
             }
         }
 
-        if (gSession) {
-            gSession->applySequence(notes, seq->sequenceLength);
+        if (appAudioSession) {
+            appAudioSession->applySequence(notes, seq->sequenceLength);
         }
 
         return 0;
     }
 
     void playLeft() {
-        if (globalStream == nullptr) {
+        if (!oboeWrapper || !oboeWrapper->isStarted()) {
             alog("Audio stream is not initialized!");
             return;
         }
-        if (gSession) gSession->hitLeft();
+        if (appAudioSession) appAudioSession->hitLeft();
     }
 
     void playRight() {
-        if (globalStream == nullptr) {
+        if (!oboeWrapper || !oboeWrapper->isStarted()) {
             alog("Audio stream is not initialized!");
             return;
         }
-        if (gSession) gSession->hitRight();
+        if (appAudioSession) appAudioSession->hitRight();
     }
 
     void runScene(int8_t metronomeEnabled, int8_t sequenceEnabled, double temp) {
         bool metronomeBool = (metronomeEnabled != 0);
         bool sequenceBool = (sequenceEnabled != 0);
 
-        if (gSession) {
-            gSession->setMetronomeEnabled(metronomeBool);
-            gSession->setSequenceEnabled(sequenceBool);
-            gSession->setTempoBpm(static_cast<double>(temp));
-            gSession->startTransport();
+        if (appAudioSession) {
+            appAudioSession->setMetronomeEnabled(metronomeBool);
+            appAudioSession->setSequenceEnabled(sequenceBool);
+            appAudioSession->setTempoBpm(static_cast<double>(temp));
+            appAudioSession->startTransport();
         }
     }
 
     void stopScene() {
-        if (gSession) gSession->stopTransport();
+        if (appAudioSession) appAudioSession->stopTransport();
     }
 }
 
-oboe::AudioStreamBuilder makeOboeBuilder() {
-    oboe::AudioStreamBuilder builder;
 
-    builder.setFormat(oboe::AudioFormat::Float)
-            ->setBufferCapacityInFrames(512)
-            ->setChannelCount(oboe::ChannelCount::Stereo)
-            ->setSampleRate(SAMPLE_RATE)
-            ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
-            ->setSharingMode(oboe::SharingMode::Exclusive);
-
-    return builder;
-}
 
 //--------------
 // UTIL STUFF
