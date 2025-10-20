@@ -1,4 +1,4 @@
-#include "mixer.h"
+#include "dsp/mixer.h"
 #include "my_log.h"
 #include <cstring>
 #include <memory>
@@ -7,7 +7,7 @@ using std::fill;
 using std::shared_ptr;
 using std::vector;
 
-void Mixer::addSource(const shared_ptr<AudioSource>& source) {
+void Mixer::addSource(const shared_ptr<IAudioSource>& source) {
     if (!source) {
         // what to do then? throw?
         return;

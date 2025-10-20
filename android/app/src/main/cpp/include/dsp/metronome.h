@@ -6,7 +6,7 @@
 #include "waveforms.h"
 #include <memory>
 
-class Metronome : public AudioSource {
+class Metronome : public IAudioSource {
 public:
     Metronome(
         const std::shared_ptr<Transport>& transport,

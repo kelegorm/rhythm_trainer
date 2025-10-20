@@ -1,0 +1,1 @@
+Wave getSineWave(int sampleCount, float freq);

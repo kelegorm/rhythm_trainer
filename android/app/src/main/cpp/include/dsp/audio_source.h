@@ -1,8 +1,8 @@
 #pragma once
 
-class AudioSource {
+class IAudioSource {
 public:
-    virtual ~AudioSource() {}
+    virtual ~IAudioSource() {}
     virtual float getVolume() = 0;
     virtual void getSamples(float* buffer, int numFrames) = 0;
 };

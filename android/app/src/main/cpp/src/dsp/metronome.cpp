@@ -1,5 +1,5 @@
-#include "audio_config.h"
-#include "metronome.h"
+#include "dsp/audio_config.h"
+#include "dsp/metronome.h"
 #include "my_log.h"
 #include <cmath>
 #include <cstring>

@@ -4,7 +4,7 @@
 #include "waveforms.h"
 #include <memory>
 
-class Sampler : public AudioSource {
+class Sampler : public IAudioSource {
 public:
     explicit Sampler(const std::shared_ptr<const Wave>& wave = nullptr);
 

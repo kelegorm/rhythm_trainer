@@ -8,7 +8,7 @@
 #include "transport.h"
 #include "waveforms.h"
 
-class Sequencer : public AudioSource {
+class Sequencer : public IAudioSource {
 public:
     /**
      * @brief Constructs a Sequencer.

@@ -1,6 +1,6 @@
 #include "my_log.h"
-#include "sampler.h"
-#include "wave_renderer.h"
+#include "dsp/sampler.h"
+#include "dsp/wave_renderer.h"
 #include <cstring>
 #include <vector>
 

@@ -1,4 +1,5 @@
-#include "waveforms.h"
+#include "dsp/waveforms.h"
+#include "gen_wave.h"
 
 using std::vector;
 

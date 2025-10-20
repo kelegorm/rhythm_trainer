@@ -3,7 +3,7 @@
 #include <cmath>
 #include <vector>
 #include "audio_config.h"
-#include "my_log.h"
+#include "../my_log.h"
 
 /**
  * @brief Immutable stereo audio _wave.
@@ -66,5 +66,3 @@ struct Wave {
         return Wave(stereoData);
     }
 };
-
-Wave getSineWave(int sampleCount, float freq);

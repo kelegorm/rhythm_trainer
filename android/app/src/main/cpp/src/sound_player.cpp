@@ -3,16 +3,16 @@
 #include <algorithm> // std::fill
 #include <oboe/Oboe.h>
 #include "audio_callback.h"
-#include "audio_source.h"
-#include "audio_config.h"
-#include "metronome.h"
-#include "mixer.h"
+#include "dsp/audio_source.h"
+#include "dsp/audio_config.h"
+#include "dsp/metronome.h"
+#include "dsp/mixer.h"
 #include "my_log.h"
-#include "note.h"
-#include "sampler.h"
-#include "sequencer.h"
-#include "transport.h"
-#include "waveforms.h"
+#include "dsp/note.h"
+#include "dsp/sampler.h"
+#include "dsp/sequencer.h"
+#include "dsp/transport.h"
+#include "gen_wave.h"
 
 using std::shared_ptr;
 using std::make_shared;
@@ -29,7 +29,7 @@ oboe::AudioStreamBuilder makeOboeBuilder();
 // -----------------------------
 // AudioHostDsp + SilentSource + Oboe adapter
 // -----------------------------
-class SilentSource : public AudioSource {
+class SilentSource : public IAudioSource {
 public:
     void getSamples(float* out, int32_t numFrames) override {
         if (!out || numFrames <= 0) return;
@@ -54,12 +54,12 @@ public:
     }
 
     // Горячая замена корневого источника
-    void swapSource(std::shared_ptr<AudioSource> newRoot) {
+    void swapSource(std::shared_ptr<IAudioSource> newRoot) {
         root_ = std::move(newRoot);
     }
 
 private:
-    std::shared_ptr<AudioSource> root_;
+    std::shared_ptr<IAudioSource> root_;
 };
 
 // Адаптер oboe::AudioStreamDataCallback - вызывает AudioHostDsp::process
@@ -85,9 +85,9 @@ private:
 };
 
 // -----------------------------
-// RhythmTrainerSession — реализует AudioSource и инкапсулирует сцену
+// RhythmTrainerSession — реализует IAudioSource и инкапсулирует сцену
 // -----------------------------
-class RhythmTrainerSession : public AudioSource {
+class RhythmTrainerSession : public IAudioSource {
 public:
     RhythmTrainerSession() = default;
 
@@ -125,7 +125,7 @@ public:
         mixer_->addSource(rhythm_);
     }
 
-    // AudioSource
+    // IAudioSource
     void getSamples(float* out, int32_t numFrames) override {
         std::fill(out, out + numFrames * 2, 0.0f);
         if (!mixer_) {return;}

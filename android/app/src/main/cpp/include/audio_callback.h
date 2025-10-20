@@ -2,9 +2,9 @@
 
 #include <memory>
 #include <oboe/Oboe.h>
-#include "mixer.h"
-#include "transport.h"
-#include "waveforms.h"  // Где лежат leftSound и rightSound
+#include "dsp/mixer.h"
+#include "dsp/transport.h"
+#include "dsp/waveforms.h"  // Где лежат leftSound и rightSound
 
 class AudioCallback : public oboe::AudioStreamDataCallback {
 public:
