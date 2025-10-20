@@ -32,7 +32,6 @@ add_library(sound_player SHARED
         src/dsp/sequencer.cpp
         src/sound_player.cpp
         src/my_log.cpp
-        src/audio_callback.cpp
         src/gen_waves.cpp
         src/dsp/core/audio_host.cpp
 )

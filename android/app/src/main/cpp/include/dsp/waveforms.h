@@ -3,7 +3,7 @@
 #include <cmath>
 #include <vector>
 #include "core/audio_config.h"
-#include "../my_log.h"
+#include "../../src/my_log.h"
 
 /**
  * @brief Immutable stereo audio _wave.
