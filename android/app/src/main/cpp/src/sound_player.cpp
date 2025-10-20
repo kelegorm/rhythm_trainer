@@ -12,7 +12,8 @@
 #include "gen_wave.h"
 #include "rhythm_trainer_session.h"
 #include "ffi_structs.h"
-#include "oboe_host_wrapper.cpp"
+//#include "oboe_host_wrapper.cpp"
+#include "miniaudio_host_wrapper.cpp"
 
 using std::shared_ptr;
 using std::make_shared;
@@ -24,13 +25,14 @@ void testGetSineWave();
 
 
 shared_ptr<AudioHost> audioHost;
-shared_ptr<OboeHostWrapper> oboeWrapper;
+//shared_ptr<OboeHostWrapper> wrapper;
+shared_ptr<MiniaudioHostWrapper> wrapper;
 shared_ptr<RhythmTrainerSession> appAudioSession;
 
 extern "C" {
     void initializeAudio(InitCallback callback) {
         alog("Started initializing Audio");
-        if (oboeWrapper && oboeWrapper->isStarted()) return; // Поток уже открыт
+        if (wrapper && wrapper->isStarted()) return; // Поток уже открыт
 
         appAudioSession = make_shared<RhythmTrainerSession>();
         appAudioSession->init();
@@ -38,9 +40,10 @@ extern "C" {
         audioHost = make_shared<AudioHost>();
         audioHost->swapSource(appAudioSession);
 
-        oboeWrapper = make_shared<OboeHostWrapper>(audioHost);
+//        wrapper = make_shared<OboeHostWrapper>(audioHost);
+        wrapper = make_shared<MiniaudioHostWrapper>(audioHost);
 
-        int err = oboeWrapper->start();
+        int err = wrapper->start();
         if (err != 0) {
             if (callback) callback(err);
             alog("Audio init met error");
@@ -51,9 +54,9 @@ extern "C" {
     }
 
     void cleanupAudioStream() {
-        if (oboeWrapper) {
-            oboeWrapper->stop();
-            oboeWrapper.reset();
+        if (wrapper) {
+            wrapper->stop();
+            wrapper.reset();
         }
         audioHost.reset();
         appAudioSession.reset();
@@ -120,7 +123,7 @@ extern "C" {
     }
 
     void playLeft() {
-        if (!oboeWrapper || !oboeWrapper->isStarted()) {
+        if (!wrapper || !wrapper->isStarted()) {
             alog("Audio stream is not initialized!");
             return;
         }
@@ -128,7 +131,7 @@ extern "C" {
     }
 
     void playRight() {
-        if (!oboeWrapper || !oboeWrapper->isStarted()) {
+        if (!wrapper || !wrapper->isStarted()) {
             alog("Audio stream is not initialized!");
             return;
         }
