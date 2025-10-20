@@ -1,6 +1,6 @@
 #pragma once
 
-#include "audio_config.h"
+#include "core/audio_config.h"
 
 class Transport {
 public:

@@ -2,7 +2,7 @@
 // Created by Dmitry on 6.3.25..
 //
 
-#include "dsp/wave_renderer.h"
+#include "dsp/core/wave_renderer.h"
 #include <cassert>
 
 using std::min;

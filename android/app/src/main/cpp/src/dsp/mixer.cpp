@@ -6,6 +6,8 @@
 using std::fill;
 using std::shared_ptr;
 using std::vector;
+using std::memset;
+
 
 void Mixer::addSource(const shared_ptr<IAudioSource>& source) {
     if (!source) {

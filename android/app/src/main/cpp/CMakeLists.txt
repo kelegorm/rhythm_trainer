@@ -24,15 +24,17 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Добавляем ваш файл с кодом
 add_library(sound_player SHARED
-        src/audio_callback.cpp
+        src/dsp/core/wave_renderer.cpp
+        src/dsp/core/audio_host.cpp
         src/dsp/metronome.cpp
         src/dsp/mixer.cpp
-        src/my_log.cpp
         src/dsp/sampler.cpp
         src/dsp/sequencer.cpp
         src/sound_player.cpp
+        src/my_log.cpp
+        src/audio_callback.cpp
         src/gen_waves.cpp
-        src/dsp/wave_renderer.cpp
+        src/dsp/core/audio_host.cpp
 )
 
 find_library(log-lib log)

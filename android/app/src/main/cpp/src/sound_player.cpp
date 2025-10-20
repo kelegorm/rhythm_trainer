@@ -2,9 +2,9 @@
 #include <cstdint> // Для int64_t
 #include <algorithm> // std::fill
 #include <oboe/Oboe.h>
-#include "audio_callback.h"
-#include "dsp/audio_source.h"
-#include "dsp/audio_config.h"
+#include "dsp/core/audio_source.h"
+#include "dsp/core/audio_config.h"
+#include "dsp/core/audio_host.h"
 #include "dsp/metronome.h"
 #include "dsp/mixer.h"
 #include "my_log.h"
@@ -26,46 +26,10 @@ void testGetSineWave();
 
 oboe::AudioStreamBuilder makeOboeBuilder();
 
-// -----------------------------
-// AudioHostDsp + SilentSource + Oboe adapter
-// -----------------------------
-class SilentSource : public IAudioSource {
-public:
-    void getSamples(float* out, int32_t numFrames) override {
-        if (!out || numFrames <= 0) return;
-
-        std::fill(out, out + numFrames * 2, 0.0f);
-    }
-
-    float getVolume() override {return 1.0; }
-};
-
-class AudioHostDsp {
-public:
-    AudioHostDsp() : root_(std::make_shared<SilentSource>()) {}
-
-    // Рендерит следующий буфер в out.
-    void process(float* out, int32_t frames) {
-        if (root_) {
-            root_->getSamples(out, frames); // пока используем текущий API
-        } else if (out && frames > 0) {
-            std::fill(out, out + frames * 2, 0.0f);
-        }
-    }
-
-    // Горячая замена корневого источника
-    void swapSource(std::shared_ptr<IAudioSource> newRoot) {
-        root_ = std::move(newRoot);
-    }
-
-private:
-    std::shared_ptr<IAudioSource> root_;
-};
-
-// Адаптер oboe::AudioStreamDataCallback - вызывает AudioHostDsp::process
+// Адаптер oboe::AudioStreamDataCallback - вызывает AudioHost::process
 class HostOboeCallback : public oboe::AudioStreamDataCallback {
 public:
-    explicit HostOboeCallback(std::shared_ptr<AudioHostDsp> host) : host_(host) {}
+    explicit HostOboeCallback(std::shared_ptr<AudioHost> host) : host_(host) {}
 
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream* stream,
                                           void* audioData,
@@ -81,7 +45,7 @@ public:
     }
 
 private:
-    std::shared_ptr<AudioHostDsp> host_;
+    std::shared_ptr<AudioHost> host_;
 };
 
 // -----------------------------
@@ -175,7 +139,7 @@ private:
 };
 
 shared_ptr<oboe::AudioStream> globalStream;
-std::shared_ptr<AudioHostDsp> gHost;
+std::shared_ptr<AudioHost> gHost;
 std::shared_ptr<HostOboeCallback> gHostCallback;
 std::shared_ptr<RhythmTrainerSession> gSession;
 
@@ -195,7 +159,7 @@ extern "C" {
         alog("Started initializing Audio");
         if (globalStream != nullptr) return; // Поток уже открыт
         if (!gHost) {
-            gHost = std::make_shared<AudioHostDsp>(); // root по умолчанию — SilentSource
+            gHost = std::make_shared<AudioHost>(); // root по умолчанию — SilentSource
             gHostCallback = std::make_shared<HostOboeCallback>(gHost);
         }
 

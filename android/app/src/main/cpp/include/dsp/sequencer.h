@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <vector>
-#include "audio_source.h"
+#include "core/audio_source.h"
 #include "note.h"
 #include "sampler.h"
 #include "transport.h"

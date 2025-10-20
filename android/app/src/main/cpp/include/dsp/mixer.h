@@ -1,6 +1,6 @@
 #pragma once
 
-#include "audio_source.h"
+#include "core/audio_source.h"
 #include <memory>
 #include <vector>
 
