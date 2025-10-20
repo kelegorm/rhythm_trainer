@@ -84,15 +84,100 @@ private:
     std::shared_ptr<AudioHostDsp> host_;
 };
 
+// -----------------------------
+// RhythmTrainerSession — реализует AudioSource и инкапсулирует сцену
+// -----------------------------
+class RhythmTrainerSession : public AudioSource {
+public:
+    RhythmTrainerSession() = default;
+
+    // Полная сборка сцены. Можно вызывать повторно для реинициализации.
+    void init() {
+        mixer_ = make_shared<Mixer>();
+
+        // Базовые источники — простые синусы, чтобы сразу что‑то слышать
+        leftSampler_ = make_shared<Sampler>(make_shared<Wave>(getSineWave(4024, 300.0f)));
+        rightSampler_ = make_shared<Sampler>(make_shared<Wave>(getSineWave(3024, 600.0f)));
+
+        transport_ = make_shared<Transport>(120);
+
+        auto met1 = make_shared<Wave>(getSineWave(2612, 800.0f));
+        auto met2 = make_shared<Wave>(getSineWave(2612, 1600.0f));
+        metronome_ = make_shared<Metronome>(transport_, met1, met2);
+
+        // Простейшая 4/4 секвенция
+        vector<Note> notes = {
+            {0, 0.001},
+            {1, 1.0},
+            {0, 2.0},
+            {1, 3.0},
+        };
+        vector<shared_ptr<const Wave>> bank = {
+            make_shared<Wave>(getSineWave(1256, 1600.0f)),
+            make_shared<Wave>(getSineWave(1256, 800.0f)),
+        };
+        rhythm_ = make_shared<Sequencer>(transport_, notes, bank, 4.0);
+
+        // Подключаем все к микшеру
+        mixer_->addSource(leftSampler_);
+        mixer_->addSource(rightSampler_);
+        mixer_->addSource(metronome_);
+        mixer_->addSource(rhythm_);
+    }
+
+    // AudioSource
+    void getSamples(float* out, int32_t numFrames) override {
+        std::fill(out, out + numFrames * 2, 0.0f);
+        if (!mixer_) {return;}
+
+        mixer_->mix(out, numFrames);
+        transport_->update(numFrames);
+    }
+
+    float getVolume() override {
+        return 1.0f;
+    }
+
+    // ——— Публичные методы управления сценой (без FFI-логики) ———
+    void assignDrumWaves(const shared_ptr<Wave>& left, const shared_ptr<Wave>& right) {
+        if (leftSampler_) leftSampler_->setWave(left);
+        if (rightSampler_) rightSampler_->setWave(right);
+        // Обновим банк для секвенсора, если он есть
+        if (rhythm_) {
+            vector<shared_ptr<const Wave>> newBank;
+            newBank.push_back(left);
+            newBank.push_back(right);
+            rhythm_->setSounds(newBank);
+        }
+    }
+
+    void applySequence(const vector<Note>& notes, double lengthBeats) {
+        if (rhythm_) rhythm_->setSequence(notes, lengthBeats);
+    }
+
+    void hitLeft()  { if (leftSampler_)  leftSampler_->trigger(); }
+    void hitRight() { if (rightSampler_) rightSampler_->trigger(); }
+
+    void setMetronomeEnabled(bool on) { if (metronome_) metronome_->setEnabled(on); }
+    void setSequenceEnabled(bool on)  { if (rhythm_)   rhythm_->setEnabled(on); }
+
+    void setTempoBpm(double bpm) { if (transport_) transport_->setBPM(bpm); }
+    void startTransport()        { if (transport_) transport_->play(); }
+    void stopTransport()         { if (transport_) transport_->stop(); }
+
+private:
+    shared_ptr<Mixer> mixer_;
+    shared_ptr<Sampler> leftSampler_;
+    shared_ptr<Sampler> rightSampler_;
+    shared_ptr<Transport> transport_;
+    shared_ptr<Metronome> metronome_;
+    shared_ptr<Sequencer> rhythm_;
+};
+
 shared_ptr<oboe::AudioStream> globalStream;
 std::shared_ptr<AudioHostDsp> gHost;
 std::shared_ptr<HostOboeCallback> gHostCallback;
-shared_ptr<Sampler> leftSampler;
-shared_ptr<Sampler> rightSampler;
-shared_ptr<Transport> transport;
-shared_ptr<Metronome> metronome;
-shared_ptr<Sequencer> rhythmPlayer;
-//shared_ptr<AudioCallback> globalCallback;
+std::shared_ptr<RhythmTrainerSession> gSession;
 
 struct NoteFFI {
     int noteId;
@@ -115,42 +200,6 @@ extern "C" {
         }
 
 //        testGetSineWave();
-
-        // Создаем микшер
-        auto globalMixer = make_shared<Mixer>();
-
-        // Создаем семплеры и задаем им звуки
-        leftSampler = make_shared<Sampler>(
-            make_shared<Wave>(getSineWave(4024, 300.0f))
-        );
-        rightSampler = make_shared<Sampler>(
-            make_shared<Wave>(getSineWave(3024, 600.0f))
-        );
-
-        transport = make_shared<Transport>(120);
-        auto metronomeSound1 = make_shared<Wave>(getSineWave(2612, 800.0f));
-        auto metronomeSound2 = make_shared<Wave>(getSineWave(2612, 1600.0f));
-        metronome = make_shared<Metronome>(transport, metronomeSound1, metronomeSound2);
-
-        vector<Note> notes;
-        notes.push_back(Note{0, 0.001});  // сильный удар на 1-ю долю
-        notes.push_back(Note{1, 1.0});  // слабый удар на 2-ю долю
-        notes.push_back(Note{0, 2.0});  // слабый удар на 3-ю долю
-        notes.push_back(Note{1, 3.0});  // слабый удар на 4-ю долю
-
-        vector<shared_ptr<const Wave>> soundBank;
-        soundBank.push_back(make_shared<Wave>(getSineWave(1256, 1600.0f))); // strong strike
-        soundBank.push_back(make_shared<Wave>(getSineWave(1256, 800.0f))); // weak
-
-        rhythmPlayer = make_shared<Sequencer>(transport, notes, soundBank, 4.0);
-
-        // Регистрируем семплеры в микшере
-        globalMixer->addSource(leftSampler);
-        globalMixer->addSource(rightSampler);
-        globalMixer->addSource(metronome);
-        globalMixer->addSource(rhythmPlayer);
-
-        // globalCallback = make_shared<AudioCallback>(transport, globalMixer);
 
         oboe::AudioStreamBuilder myOboe = makeOboeBuilder(); // todo check if existed (but maybe not)
         myOboe.setDataCallback(gHostCallback.get());
@@ -179,10 +228,14 @@ extern "C" {
             return;
         }
 
-        // Подключаем текущую сцену (микшер) как корневой источник для хоста.
-//        if (gHost) {
-//            gHost->swapSource(globalMixer);
-//        }
+        if (!gSession) {
+            gSession = std::make_shared<RhythmTrainerSession>();
+            gSession->init();
+        }
+        if (gHost) {
+            gHost->swapSource(gSession);
+        }
+
         if (callback) {
             callback(0);
         }
@@ -198,7 +251,7 @@ extern "C" {
         }
         gHostCallback.reset();
         gHost.reset();
-//        globalCallback.reset();
+        gSession.reset();
         alog("Audio stream cleaned up!");
     }
 
@@ -226,14 +279,9 @@ extern "C" {
         auto leftSound = make_shared<Wave>(leftVector);
         auto rightSound = make_shared<Wave>(rightVector);
 
-        leftSampler->setWave(leftSound);
-        rightSampler->setWave(rightSound);
-
-        vector<shared_ptr<const Wave>> newSoundBank;
-        newSoundBank.push_back(leftSound);
-        newSoundBank.push_back(rightSound);
-
-        rhythmPlayer->setSounds(newSoundBank);
+        if (gSession) {
+            gSession->assignDrumWaves(leftSound, rightSound);
+        }
 
         return 0;
     }
@@ -259,7 +307,9 @@ extern "C" {
             }
         }
 
-        rhythmPlayer->setSequence(notes, seq->sequenceLength);
+        if (gSession) {
+            gSession->applySequence(notes, seq->sequenceLength);
+        }
 
         return 0;
     }
@@ -269,7 +319,7 @@ extern "C" {
             alog("Audio stream is not initialized!");
             return;
         }
-        leftSampler->trigger();
+        if (gSession) gSession->hitLeft();
     }
 
     void playRight() {
@@ -277,24 +327,23 @@ extern "C" {
             alog("Audio stream is not initialized!");
             return;
         }
-        rightSampler->trigger();
+        if (gSession) gSession->hitRight();
     }
 
     void runScene(int8_t metronomeEnabled, int8_t sequenceEnabled, double temp) {
         bool metronomeBool = (metronomeEnabled != 0);
         bool sequenceBool = (sequenceEnabled != 0);
 
-        metronome->setEnabled(metronomeBool);
-        rhythmPlayer->setEnabled(sequenceBool);
-
-//        if (globalCallback) globalCallback->resetBusy();
-
-        transport->setBPM(static_cast<double>(temp));
-        transport->play();
+        if (gSession) {
+            gSession->setMetronomeEnabled(metronomeBool);
+            gSession->setSequenceEnabled(sequenceBool);
+            gSession->setTempoBpm(static_cast<double>(temp));
+            gSession->startTransport();
+        }
     }
 
     void stopScene() {
-        transport->stop();
+        if (gSession) gSession->stopTransport();
     }
 }
 
