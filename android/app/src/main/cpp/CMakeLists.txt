@@ -34,6 +34,9 @@ add_library(sound_player SHARED
         src/my_log.cpp
         src/gen_waves.cpp
         src/dsp/core/audio_host.cpp
+        include/rhythm_trainer_session.h
+        src/rhythm_trainer_session.cpp
+        src/ffi_structs.h
 )
 
 find_library(log-lib log)
