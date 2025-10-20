@@ -39,6 +39,7 @@ add_library(sound_player SHARED
         src/ffi_structs.h
         src/oboe_host_wrapper.cpp
         # src/oboe_host_wrapper.cpp  # removed duplicate
+        src/my_log.h
         src/miniaudio.c
         src/miniaudio_host_wrapper.cpp
 )
@@ -65,4 +66,4 @@ set_target_properties(sound_player PROPERTIES
         CXX_STANDARD_REQUIRED ON
 )
 
-target_include_directories(sound_player PRIVATE src)
+#target_include_directories(sound_player PRIVATE src)

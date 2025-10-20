@@ -1,5 +1,4 @@
 #include "dsp/mixer.h"
-#include "my_log.h"
 #include "dsp/sampler.h"
 #include "dsp/sequencer.h"
 #include <algorithm>

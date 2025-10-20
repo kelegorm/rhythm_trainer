@@ -1,4 +1,3 @@
-#include "my_log.h"
 #include "dsp/sampler.h"
 #include "dsp/core/wave_renderer.h"
 #include <cstring>
