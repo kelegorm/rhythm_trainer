@@ -1,7 +1,9 @@
 #include <chrono>  // Для работы с временем
 #include <cstdint> // Для int64_t
+#include <algorithm> // std::fill
 #include <oboe/Oboe.h>
 #include "audio_callback.h"
+#include "audio_source.h"
 #include "audio_config.h"
 #include "metronome.h"
 #include "mixer.h"
@@ -24,13 +26,73 @@ void testGetSineWave();
 
 oboe::AudioStreamBuilder makeOboeBuilder();
 
+// -----------------------------
+// AudioHostDsp + SilentSource + Oboe adapter
+// -----------------------------
+class SilentSource : public AudioSource {
+public:
+    void getSamples(float* out, int32_t numFrames) override {
+        if (!out || numFrames <= 0) return;
+
+        std::fill(out, out + numFrames * 2, 0.0f);
+    }
+
+    float getVolume() override {return 1.0; }
+};
+
+class AudioHostDsp {
+public:
+    AudioHostDsp() : root_(std::make_shared<SilentSource>()) {}
+
+    // Рендерит следующий буфер в out.
+    void process(float* out, int32_t frames) {
+        if (root_) {
+            root_->getSamples(out, frames); // пока используем текущий API
+        } else if (out && frames > 0) {
+            std::fill(out, out + frames * 2, 0.0f);
+        }
+    }
+
+    // Горячая замена корневого источника
+    void swapSource(std::shared_ptr<AudioSource> newRoot) {
+        root_ = std::move(newRoot);
+    }
+
+private:
+    std::shared_ptr<AudioSource> root_;
+};
+
+// Адаптер oboe::AudioStreamDataCallback - вызывает AudioHostDsp::process
+class HostOboeCallback : public oboe::AudioStreamDataCallback {
+public:
+    explicit HostOboeCallback(std::shared_ptr<AudioHostDsp> host) : host_(host) {}
+
+    oboe::DataCallbackResult onAudioReady(oboe::AudioStream* stream,
+                                          void* audioData,
+                                          int32_t numFrames) override {
+        auto out = static_cast<float*>(audioData);
+        const int32_t channels = stream->getChannelCount();
+        if (host_ && channels == 2) {
+            host_->process(out, numFrames);
+        } else if (out) {
+            std::fill(out, out + numFrames * channels, 0.0f);
+        }
+        return oboe::DataCallbackResult::Continue;
+    }
+
+private:
+    std::shared_ptr<AudioHostDsp> host_;
+};
+
 shared_ptr<oboe::AudioStream> globalStream;
+std::shared_ptr<AudioHostDsp> gHost;
+std::shared_ptr<HostOboeCallback> gHostCallback;
 shared_ptr<Sampler> leftSampler;
 shared_ptr<Sampler> rightSampler;
 shared_ptr<Transport> transport;
 shared_ptr<Metronome> metronome;
 shared_ptr<Sequencer> rhythmPlayer;
-shared_ptr<AudioCallback> globalCallback;
+//shared_ptr<AudioCallback> globalCallback;
 
 struct NoteFFI {
     int noteId;
@@ -47,6 +109,10 @@ extern "C" {
     void initializeAudio(InitCallback callback) {
         alog("Started initializing Audio");
         if (globalStream != nullptr) return; // Поток уже открыт
+        if (!gHost) {
+            gHost = std::make_shared<AudioHostDsp>(); // root по умолчанию — SilentSource
+            gHostCallback = std::make_shared<HostOboeCallback>(gHost);
+        }
 
 //        testGetSineWave();
 
@@ -84,10 +150,10 @@ extern "C" {
         globalMixer->addSource(metronome);
         globalMixer->addSource(rhythmPlayer);
 
-        globalCallback = make_shared<AudioCallback>(transport, globalMixer);
+        // globalCallback = make_shared<AudioCallback>(transport, globalMixer);
 
         oboe::AudioStreamBuilder myOboe = makeOboeBuilder(); // todo check if existed (but maybe not)
-        myOboe.setDataCallback(globalCallback.get());
+        myOboe.setDataCallback(gHostCallback.get());
 
         oboe::Result result = myOboe.openStream(globalStream);
         if (result != oboe::Result::OK) {
@@ -113,6 +179,10 @@ extern "C" {
             return;
         }
 
+        // Подключаем текущую сцену (микшер) как корневой источник для хоста.
+//        if (gHost) {
+//            gHost->swapSource(globalMixer);
+//        }
         if (callback) {
             callback(0);
         }
@@ -126,7 +196,9 @@ extern "C" {
             globalStream->close();
             globalStream.reset();
         }
-        globalCallback.reset();
+        gHostCallback.reset();
+        gHost.reset();
+//        globalCallback.reset();
         alog("Audio stream cleaned up!");
     }
 
@@ -193,20 +265,18 @@ extern "C" {
     }
 
     void playLeft() {
-        if (globalStream == nullptr || globalCallback == nullptr) {
+        if (globalStream == nullptr) {
             alog("Audio stream is not initialized!");
             return;
         }
-
         leftSampler->trigger();
     }
 
     void playRight() {
-        if (globalStream == nullptr || globalCallback == nullptr) {
+        if (globalStream == nullptr) {
             alog("Audio stream is not initialized!");
             return;
         }
-
         rightSampler->trigger();
     }
 
@@ -217,7 +287,7 @@ extern "C" {
         metronome->setEnabled(metronomeBool);
         rhythmPlayer->setEnabled(sequenceBool);
 
-        globalCallback->resetBusy();
+//        if (globalCallback) globalCallback->resetBusy();
 
         transport->setBPM(static_cast<double>(temp));
         transport->play();
